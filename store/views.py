@@ -1,8 +1,10 @@
 from django.shortcuts import render
+from .models import Product
 
 
 def home(request):
-	return render(request, "store/index.html")
+	products = Product.objects.filter(is_available=True).select_related("category").order_by("-created")
+	return render(request, "store/index.html", {"products": products})
 
 
 def cart(request):

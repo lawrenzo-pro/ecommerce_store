@@ -439,24 +439,11 @@
                                     <span class="text-dark" style="width: 130px;">All Products</span>
                                 </a>
                             </li>
-                            <li class="nav-item mb-4">
-                                <a class="d-flex py-2 mx-2 bg-light rounded-pill" data-bs-toggle="pill" href="#tab-2">
-                                    <span class="text-dark" style="width: 130px;">New Arrivals</span>
-                                </a>
-                            </li>
-                            <li class="nav-item mb-4">
-                                <a class="d-flex mx-2 py-2 bg-light rounded-pill" data-bs-toggle="pill" href="#tab-3">
-                                    <span class="text-dark" style="width: 130px;">Featured</span>
-                                </a>
-                            </li>
-                            <li class="nav-item mb-4">
-                                <a class="d-flex mx-2 py-2 bg-light rounded-pill" data-bs-toggle="pill" href="#tab-4">
-                                    <span class="text-dark" style="width: 130px;">Top Selling</span>
-                                </a>
-                            </li>
                         </ul>
                     </div>
                 </div>
+                {% comment %}Static demo product tabs replaced by database products.{% endcomment %}
+                {% comment %}
                 <div class="tab-content">
                     <div id="tab-1" class="tab-pane fade show p-0 active">
                         <div class="row g-4">
@@ -1356,6 +1343,45 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                {% endcomment %}
+                <div class="tab-content">
+                    <div id="tab-1" class="tab-pane fade show p-0 active">
+                        <div class="row g-4">
+                            {% for product in products %}
+                            <div class="col-md-6 col-lg-4 col-xl-3">
+                                <div class="product-item rounded wow fadeInUp">
+                                    <div class="product-item-inner border rounded">
+                                        <div class="product-item-inner-item">
+                                            {% if product.image %}
+                                            <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top" alt="{{ product.name }}">
+                                            {% else %}
+                                            <img src="{% static 'img/product-3.png' %}" class="img-fluid w-100 rounded-top" alt="{{ product.name }}">
+                                            {% endif %}
+                                            <div class="product-details">
+                                                <a href="#"><i class="fa fa-eye fa-1x"></i></a>
+                                            </div>
+                                        </div>
+                                        <div class="text-center rounded-bottom p-4">
+                                            <a href="#" class="d-block mb-2">{{ product.category.name }}</a>
+                                            <a href="#" class="d-block h4">{{ product.name }}</a>
+                                            <span class="text-primary fs-5">KSh {{ product.price|floatformat:2 }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="product-item-add border border-top-0 rounded-bottom text-center p-4 pt-0">
+                                        <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4">
+                                            <i class="fas fa-shopping-cart me-2"></i> Add To Cart
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12">
+                                <p class="text-center text-muted mb-0">No products available yet.</p>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
