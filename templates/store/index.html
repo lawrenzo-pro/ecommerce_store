@@ -288,20 +288,35 @@
             </div>
             <div class="col-12 col-lg-5 col-xl-3 wow fadeInRight" data-wow-delay="0.1s">
                 <div class="carousel-header-banner h-100">
-                    <img src="{% static 'img/header-img.jpg' %}" class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Image">
+                    {% if featured_product and featured_product.image %}
+                    <img src="{{ featured_product.image.url }}" class="img-fluid w-100 h-100" style="object-fit: contain;" alt="{{ featured_product.name }}">
+                    {% else %}
+                    <img src="{% static 'img/header-img.jpg' %}" class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Electronics">
+                    {% endif %}
                     <div class="carousel-banner-offer">
                         <p class="bg-primary text-white rounded fs-5 py-2 px-4 mb-0 me-3">Save $48.00</p>
                         <p class="text-primary fs-5 fw-bold mb-0">Special Offer</p>
                     </div>
                     <div class="carousel-banner">
                         <div class="carousel-banner-content text-center p-4">
-                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                            <a href="#" class="d-block text-white fs-3">Apple iPad Mini <br> G2356</a>
-                            <del class="me-2 text-white fs-5">$1,250.00</del>
-                            <span class="text-primary fs-5">$1,050.00</span>
+                            {% if featured_product %}
+                            <a href="#" class="d-block mb-2">{{ featured_product.category.name }}</a>
+                            <span class="d-block text-white fs-3">{{ featured_product.name }}</span>
+                            <span class="text-primary fs-5">KSh {{ featured_product.price|floatformat:2 }}</span>
+                            {% else %}
+                            <span class="d-block text-white fs-4">{% translate "No products available yet." %}</span>
+                            {% endif %}
                         </div>
-                        <a href="#" class="btn btn-primary rounded-pill py-2 px-4"><i
-                                class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
+                        {% if featured_product %}
+                        <form action="{% url 'add_to_cart' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ featured_product.pk }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary rounded-pill py-2 px-4">
+                                <i class="fas fa-shopping-cart me-2"></i> {% translate "Add to cart" %}
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -1423,6 +1438,7 @@
     <!-- Product Banner End -->
 
     <!-- Product List Satrt -->
+    {% comment %}
     <div class="container-fluid products productList overflow-hidden">
         <div class="container products-mini py-5">
             <div class="mx-auto text-center mb-5" style="max-width: 900px;">
@@ -1938,8 +1954,10 @@
         </div>
     </div>
     <!-- Product List End -->
+    {% endcomment %}
 
     <!-- Bestseller Products Start -->
+    {% comment %}
     <div class="container-fluid products pb-5">
         <div class="container products-mini py-5">
             <div class="mx-auto text-center mb-5" style="max-width: 700px;">
@@ -2164,6 +2182,7 @@
         </div>
     </div>
     <!-- Bestseller Products End -->
+    {% endcomment %}
 
 
     <!-- Footer Start -->

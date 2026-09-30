@@ -44,6 +44,39 @@ class StorefrontWorkflowTests(TestCase):
 		self.client.post(reverse("cart"), {"remove": str(self.product.pk)})
 		self.assertEqual(self.client.session["cart"], {})
 
+	def test_homepage_featured_product_uses_cart_endpoint(self):
+		response = self.client.get(reverse("home"))
+		self.assertEqual(response.context["featured_product"], self.product)
+		self.assertContains(
+			response,
+			f'name="product_id" value="{self.product.pk}"',
+		)
+		self.client.post(
+			reverse("add_to_cart"), {"product_id": self.product.pk, "quantity": 1}
+		)
+		self.assertEqual(self.client.session["cart"][str(self.product.pk)], 1)
+
+	def test_shop_and_single_pages_use_database_product_for_add_button(self):
+		for route_name in ("home", "shop", "single"):
+			with self.subTest(route=route_name):
+				response = self.client.get(reverse(route_name))
+				self.assertEqual(response.status_code, 200)
+				self.assertContains(response, "Test phone")
+				self.assertContains(
+					response, f'name="product_id" value="{self.product.pk}"'
+				)
+				self.assertNotContains(response, "Apple iPad Mini")
+
+	def test_empty_catalog_does_not_render_demo_product_controls(self):
+		self.product.delete()
+		for route_name in ("home", "shop", "single"):
+			with self.subTest(route=route_name):
+				response = self.client.get(reverse(route_name))
+				self.assertEqual(response.status_code, 200)
+				self.assertContains(response, "No products available yet.")
+				self.assertNotContains(response, "Apple iPad Mini")
+				self.assertNotContains(response, "Add to cart")
+
 	def test_checkout_creates_order_and_requests_stk_push(self):
 		self.set_cart(quantity=2)
 		checkout_response = {

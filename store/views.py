@@ -46,8 +46,14 @@ def _cart_summary(request):
 
 
 def home(request):
-	products = Product.objects.filter(is_available=True).select_related("category").order_by("-created")
-	return render(request, "store/index.html", {"products": products})
+	products = Product.objects.filter(
+		is_available=True, stock__gt=0
+	).select_related("category").order_by("-created")
+	return render(
+		request,
+		"store/index.html",
+		{"products": products, "featured_product": products.first()},
+	)
 
 
 def cart(request):
@@ -203,8 +209,14 @@ def mpesa_callback(request):
 
 
 def shop(request):
-	return render(request, "store/shop.html")
+	products = Product.objects.filter(
+		is_available=True, stock__gt=0
+	).select_related("category").order_by("-created")
+	return render(request, "store/shop.html", {"products": products})
 
 
 def single(request):
-	return render(request, "store/single.html")
+	product = Product.objects.filter(
+		is_available=True, stock__gt=0
+	).select_related("category").order_by("-created").first()
+	return render(request, "store/single.html", {"featured_product": product})

@@ -266,6 +266,7 @@
 
 
     <!-- Single Products Start -->
+    {% comment %}
     <div class="container-fluid shop py-5">
         <div class="container py-5">
             <div class="row g-4">
@@ -691,9 +692,49 @@
             </div>
         </div>
     </div>
+    {% endcomment %}
+    <div class="container-fluid shop py-5">
+        <div class="container py-5">
+            {% if featured_product %}
+            <div class="row g-5 align-items-start">
+                <div class="col-lg-5">
+                    {% if featured_product.image %}
+                    <img src="{{ featured_product.image.url }}" class="img-fluid w-100 rounded" alt="{{ featured_product.name }}">
+                    {% else %}
+                    <img src="{% static 'img/product-3.png' %}" class="img-fluid w-100 rounded" alt="{{ featured_product.name }}">
+                    {% endif %}
+                </div>
+                <div class="col-lg-7">
+                    <p class="text-muted">{{ featured_product.category.name }}</p>
+                    <h1 class="mb-3">{{ featured_product.name }}</h1>
+                    <p class="text-primary fs-3">KSh {{ featured_product.price|floatformat:2 }}</p>
+                    {% if featured_product.description %}
+                    <p>{{ featured_product.description }}</p>
+                    {% else %}
+                    <p>{% translate "No description available." %}</p>
+                    {% endif %}
+                    <p>{% translate "In stock" %}: {{ featured_product.stock }}</p>
+                    <form action="{% url 'add_to_cart' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ featured_product.pk }}">
+                        <label class="form-label" for="product-quantity">{% translate "Quantity" %}</label>
+                        <input id="product-quantity" class="form-control mb-3" style="max-width: 120px;" type="number"
+                            name="quantity" value="1" min="1" max="{{ featured_product.stock }}" required>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">
+                            <i class="fas fa-shopping-cart me-2"></i> {% translate "Add to cart" %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-center text-muted">{% translate "No products available yet." %}</p>
+            {% endif %}
+        </div>
+    </div>
     <!-- Single Products End -->
 
     <!-- Related Product Start -->
+    {% comment %}
     <div class="container-fluid related-product">
         <div class="container">
             <div class="mx-auto text-center pb-5" style="max-width: 700px;">
@@ -902,6 +943,7 @@
         </div>
     </div>
     <!-- Related Product End -->
+    {% endcomment %}
 
     <!-- Footer Start -->
     <div class="container-fluid footer py-5 wow fadeIn" data-wow-delay="0.2s">

@@ -370,6 +370,7 @@
 
 
     <!-- Shop Page Start -->
+    {% comment %}
     <div class="container-fluid shop py-5">
         <div class="container py-5">
             <div class="row g-4">
@@ -1499,6 +1500,38 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+    {% endcomment %}
+    <div class="container-fluid shop py-5">
+        <div class="container py-5">
+            <h1 class="mb-4">{% translate "Shop" %}</h1>
+            <div class="row g-4">
+                {% for product in products %}
+                <div class="col-sm-6 col-lg-4 col-xl-3">
+                    <div class="product-item rounded border p-3 h-100">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" class="img-fluid w-100 mb-3" alt="{{ product.name }}">
+                        {% else %}
+                        <img src="{% static 'img/product-3.png' %}" class="img-fluid w-100 mb-3" alt="{{ product.name }}">
+                        {% endif %}
+                        <p class="text-muted mb-1">{{ product.category.name }}</p>
+                        <h2 class="h5">{{ product.name }}</h2>
+                        <p class="text-primary fs-5">KSh {{ product.price|floatformat:2 }}</p>
+                        <form action="{% url 'add_to_cart' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.pk }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                <i class="fas fa-shopping-cart me-2"></i> {% translate "Add to cart" %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12"><p class="text-center text-muted">{% translate "No products available yet." %}</p></div>
+                {% endfor %}
             </div>
         </div>
     </div>
