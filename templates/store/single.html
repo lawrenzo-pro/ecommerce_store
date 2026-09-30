@@ -63,14 +63,7 @@
 
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>
-                                USD</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> Euro</a>
-                            <a href="#" class="dropdown-item"> Dolar</a>
-                        </div>
-                    </div>
+                    <div class="text-muted me-2"><small>KES</small></div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown"><small>
                                 {% if current_language == "sw" %}Kiswahili{% else %}English{% endif %}</small></a>
@@ -124,7 +117,7 @@
                             class="rounded-circle btn-md-square border"><i class="fas fa-heart"></i></a>
                     <a href="#" class="text-muted d-flex align-items-center justify-content-center"><span
                             class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span>
-                        <span class="text-dark ms-2">$0.00</span></a>
+                        <span class="text-dark ms-2">KES 0.00</span></a>
                 </div>
             </div>
         </div>
@@ -707,7 +700,7 @@
                 <div class="col-lg-7">
                     <p class="text-muted">{{ featured_product.category.name }}</p>
                     <h1 class="mb-3">{{ featured_product.name }}</h1>
-                    <p class="text-primary fs-3">KSh {{ featured_product.price|floatformat:2 }}</p>
+                    <p class="text-primary fs-3">KES {{ featured_product.price|floatformat:2 }}</p>
                     {% if featured_product.description %}
                     <p>{{ featured_product.description }}</p>
                     {% else %}

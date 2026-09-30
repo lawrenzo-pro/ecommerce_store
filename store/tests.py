@@ -37,7 +37,7 @@ class StorefrontWorkflowTests(TestCase):
 
 		response = self.client.get(reverse("cart"))
 		self.assertContains(response, "Test phone")
-		self.assertContains(response, "KSh 250.00")
+		self.assertContains(response, "KES 250.00")
 
 		self.client.post(reverse("cart"), {f"quantity_{self.product.pk}": "3"})
 		self.assertEqual(self.client.session["cart"][str(self.product.pk)], 3)
@@ -76,6 +76,27 @@ class StorefrontWorkflowTests(TestCase):
 				self.assertContains(response, "No products available yet.")
 				self.assertNotContains(response, "Apple iPad Mini")
 				self.assertNotContains(response, "Add to cart")
+
+	def test_storefront_pages_display_kes_only(self):
+		self.set_cart()
+		user = get_user_model().objects.create_user(username="kes-customer")
+		self.client.force_login(user)
+		Order.objects.create(
+			user=user,
+			first_name="KES",
+			last_name="Customer",
+			phone_number="254712345678",
+			delivery_location="Nairobi",
+			total_cost="125.00",
+		)
+		for route_name in ("home", "shop", "single", "cart", "checkout", "account"):
+			with self.subTest(route=route_name):
+				response = self.client.get(reverse(route_name))
+				self.assertEqual(response.status_code, 200)
+				content = response.content.decode()
+				self.assertIn("KES", content)
+				for old_currency in ("$", "USD", "Euro", "Dolar", "KSh"):
+					self.assertNotIn(old_currency, content)
 
 	def test_checkout_creates_order_and_requests_stk_push(self):
 		self.set_cart(quantity=2)

@@ -62,14 +62,7 @@
 
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>
-                                USD</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> Euro</a>
-                            <a href="#" class="dropdown-item"> Dolar</a>
-                        </div>
-                    </div>
+                    <div class="text-muted me-2"><small>KES</small></div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown"><small>
                                 {% if current_language == "sw" %}Kiswahili{% else %}English{% endif %}</small></a>
@@ -123,7 +116,7 @@
                             class="rounded-circle btn-md-square border"><i class="fas fa-heart"></i></a>
                     <a href="#" class="text-muted d-flex align-items-center justify-content-center"><span
                             class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span>
-                        <span class="text-dark ms-2">$0.00</span></a>
+                        <span class="text-dark ms-2">KES 0.00</span></a>
                 </div>
             </div>
         </div>
@@ -305,7 +298,7 @@
                         <i class="fas fa-credit-card fa-2x text-primary"></i>
                         <div class="ms-4">
                             <h6 class="text-uppercase mb-2">Receive Gift Card</h6>
-                            <p class="mb-0">Recieve gift all over oder $50</p>
+                            <p class="mb-0">Recieve gift all over oder KES 50</p>
                         </div>
                     </div>
                 </div>
@@ -1518,7 +1511,7 @@
                         {% endif %}
                         <p class="text-muted mb-1">{{ product.category.name }}</p>
                         <h2 class="h5">{{ product.name }}</h2>
-                        <p class="text-primary fs-5">KSh {{ product.price|floatformat:2 }}</p>
+                        <p class="text-primary fs-5">KES {{ product.price|floatformat:2 }}</p>
                         <form action="{% url 'add_to_cart' %}" method="post">
                             {% csrf_token %}
                             <input type="hidden" name="product_id" value="{{ product.pk }}">
@@ -1548,7 +1541,7 @@
                             <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center rounded p-4"
                                 style="background: rgba(255, 255, 255, 0.5);">
                                 <h3 class="display-5 text-primary">EOS Rebel <br> <span>T7i Kit</span></h3>
-                                <p class="fs-4 text-muted">$899.99</p>
+                                <p class="fs-4 text-muted">KES 899.99</p>
                                 <a href="#" class="btn btn-primary rounded-pill align-self-start py-2 px-4">Shop Now</a>
                             </div>
                         </div>

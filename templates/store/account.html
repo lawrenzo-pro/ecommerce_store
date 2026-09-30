@@ -50,7 +50,7 @@
                             <tr>
                                 <th>#{{ order.pk }}</th>
                                 <td>{{ order.created|date:"DATE_FORMAT" }}</td>
-                                <td>KSh {{ order.total_cost|floatformat:2 }}</td>
+                                <td>KES {{ order.total_cost|floatformat:2 }}</td>
                                 <td>{{ order.get_payment_status_display }}</td>
                             </tr>
                             {% endfor %}

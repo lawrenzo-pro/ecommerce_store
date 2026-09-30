@@ -62,14 +62,7 @@
 
             <div class="col-lg-4 text-center text-lg-end">
                 <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted me-2" data-bs-toggle="dropdown"><small>
-                                USD</small></a>
-                        <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> Euro</a>
-                            <a href="#" class="dropdown-item"> Dolar</a>
-                        </div>
-                    </div>
+                    <div class="text-muted me-2"><small>KES</small></div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown"><small>
                                 {% if current_language == "sw" %}Kiswahili{% else %}English{% endif %}</small></a>
@@ -123,7 +116,7 @@
                             class="rounded-circle btn-md-square border"><i class="fas fa-heart"></i></a>
                     <a href="#" class="text-muted d-flex align-items-center justify-content-center"><span
                             class="rounded-circle btn-md-square border"><i class="fas fa-shopping-cart"></i></span>
-                        <span class="text-dark ms-2">$0.00</span></a>
+                        <span class="text-dark ms-2">KES 0.00</span></a>
                 </div>
             </div>
         </div>
@@ -305,7 +298,7 @@
                         <i class="fas fa-credit-card fa-2x text-primary"></i>
                         <div class="ms-4">
                             <h6 class="text-uppercase mb-2">Receive Gift Card</h6>
-                            <p class="mb-0">Recieve gift all over oder $50</p>
+                            <p class="mb-0">Recieve gift all over oder KES 50</p>
                         </div>
                     </div>
                 </div>
@@ -593,12 +586,12 @@
                                     {% for item in cart_items %}
                                     <tr>
                                         <th scope="row">{{ item.product.name }}</th>
-                                        <td>KSh {{ item.product.price|floatformat:2 }}</td>
+                                        <td>KES {{ item.product.price|floatformat:2 }}</td>
                                         <td>{{ item.quantity }}</td>
-                                        <td>KSh {{ item.line_total|floatformat:2 }}</td>
+                                        <td>KES {{ item.line_total|floatformat:2 }}</td>
                                     </tr>
                                     {% endfor %}
-                                    <tr><th colspan="3">{% translate "Total due" %}</th><td><strong>KSh {{ subtotal|floatformat:2 }}</strong></td></tr>
+                                    <tr><th colspan="3">{% translate "Total due" %}</th><td><strong>KES {{ subtotal|floatformat:2 }}</strong></td></tr>
                                 </tbody>
                             </table>
                         </div>
