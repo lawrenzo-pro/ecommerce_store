@@ -1,6 +1,7 @@
-{% load static %}
+{% load static i18n %}
+{% get_current_language as current_language %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_language }}">
 
 <head>
     <meta charset="utf-8">
@@ -71,12 +72,14 @@
                     </div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown"><small>
-                                English</small></a>
+                                {% if current_language == "sw" %}Kiswahili{% else %}English{% endif %}</small></a>
                         <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> English</a>
-                            <a href="#" class="dropdown-item"> Turkish</a>
-                            <a href="#" class="dropdown-item"> Spanol</a>
-                            <a href="#" class="dropdown-item"> Italiano</a>
+                            <form action="{% url 'set_language' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" name="language" value="en" class="dropdown-item">English</button>
+                                <button type="submit" name="language" value="sw" class="dropdown-item">Kiswahili</button>
+                            </form>
                         </div>
                     </div>
                     <div class="dropdown">
@@ -199,20 +202,20 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarCollapse">
                         <div class="navbar-nav ms-auto py-0">
-                            <a href="{% url 'home' %}" class="nav-item nav-link">Home</a>
-                            <a href="{% url 'shop' %}" class="nav-item nav-link">Shop</a>
-                            <a href="{% url 'single' %}" class="nav-item nav-link">Single Page</a>
+                            <a href="{% url 'home' %}" class="nav-item nav-link">{% translate "Home" %}</a>
+                            <a href="{% url 'shop' %}" class="nav-item nav-link">{% translate "Shop" %}</a>
+                            <a href="{% url 'single' %}" class="nav-item nav-link">{% translate "Single Page" %}</a>
                             <div class="nav-item dropdown">
                                 <a href="#" class="nav-link active" data-bs-toggle="dropdown"><span
-                                        class="dropdown-toggle">Pages</span></a>
+                                    class="dropdown-toggle">{% translate "Pages" %}</span></a>
                                 <div class="dropdown-menu m-0">
                                     <a href="bestseller.html" class="dropdown-item">Bestseller</a>
-                                    <a href="{% url 'cart' %}" class="dropdown-item active">Cart Page</a>
-                                    <a href="{% url 'checkout' %}" class="dropdown-item">Cheackout</a>
+                                    <a href="{% url 'cart' %}" class="dropdown-item active">{% translate "Cart Page" %}</a>
+                                    <a href="{% url 'checkout' %}" class="dropdown-item">{% translate "Checkout" %}</a>
                                     <a href="404.html" class="dropdown-item">404 Page</a>
                                 </div>
                             </div>
-                            <a href="contact.html" class="nav-item nav-link me-2">Contact</a>
+                            <a href="contact.html" class="nav-item nav-link me-2">{% translate "Contact" %}</a>
                             <div class="nav-item dropdown d-block d-lg-none mb-3">
                                 <a href="#" class="nav-link" data-bs-toggle="dropdown"><span class="dropdown-toggle">All
                                         Category</span></a>
@@ -263,11 +266,11 @@
 
     <!-- Single Page Header start -->
     <div class="container-fluid page-header py-5">
-        <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">Cart Page</h1>
+        <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">{% translate "Cart Page" %}</h1>
         <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
             <li class="breadcrumb-item"><a href="#">Home</a></li>
             <li class="breadcrumb-item"><a href="#">Pages</a></li>
-            <li class="breadcrumb-item active text-white">Cart Page</li>
+            <li class="breadcrumb-item active text-white">{% translate "Cart Page" %}</li>
         </ol>
     </div>
     <!-- Single Page Header End -->
@@ -275,6 +278,7 @@
     <!-- Cart Page Start -->
     <div class="container-fluid py-5">
         <div class="container py-5">
+            {% comment %}
             <div class="table-responsive">
                 <table class="table">
                     <thead>
@@ -396,6 +400,56 @@
                     </tbody>
                 </table>
             </div>
+            {% endcomment %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>
+            {% endfor %}
+            {% if cart_items %}
+            <form method="post">
+                {% csrf_token %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>{% translate "Product" %}</th>
+                                <th>{% translate "Price" %}</th>
+                                <th>{% translate "Quantity" %}</th>
+                                <th>{% translate "Total" %}</th>
+                                <th>{% translate "Remove" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                            <tr>
+                                <th scope="row">{{ item.product.name }}</th>
+                                <td>KSh {{ item.product.price|floatformat:2 }}</td>
+                                <td>
+                                    <input class="form-control" type="number" name="quantity_{{ item.product.pk }}"
+                                        value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}" required>
+                                </td>
+                                <td>KSh {{ item.line_total|floatformat:2 }}</td>
+                                <td>
+                                    <button class="btn btn-md rounded-circle bg-light border" type="submit"
+                                        name="remove" value="{{ item.product.pk }}" aria-label="{% translate 'Remove' %}">
+                                        <i class="fa fa-times text-danger"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <button class="btn btn-outline-primary rounded-pill px-4 py-3" type="submit">{% translate "Update cart" %}</button>
+                    <h4 class="mb-0">{% translate "Subtotal" %}: KSh {{ subtotal|floatformat:2 }}</h4>
+                    <a class="btn btn-primary rounded-pill px-4 py-3" href="{% url 'checkout' %}">{% translate "Proceed to checkout" %}</a>
+                </div>
+            </form>
+            {% else %}
+            <p class="text-center text-muted">{% translate "Your cart is empty." %}</p>
+            <div class="text-center"><a class="btn btn-primary rounded-pill px-4 py-3" href="{% url 'home' %}">{% translate "Continue shopping" %}</a></div>
+            {% endif %}
+            {% comment %}
             <div class="mt-5">
                 <input type="text" class="border-0 border-bottom rounded me-5 py-3 mb-4" placeholder="Coupon Code">
                 <button class="btn btn-primary rounded-pill px-4 py-3" type="button">Apply Coupon</button>
@@ -427,6 +481,7 @@
                     </div>
                 </div>
             </div>
+            {% endcomment %}
         </div>
     </div>
     <!-- Cart Page End -->

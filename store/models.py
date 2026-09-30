@@ -26,6 +26,13 @@ class Product(models.Model):
         return self.name
 
 class Order(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("processing", "Processing"),
+        ("paid", "Paid"),
+        ("failed", "Failed"),
+    ]
+
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     # Crucial for the Daraja STK Push:
@@ -33,6 +40,12 @@ class Order(models.Model):
     delivery_location = models.CharField(max_length=250, help_text="e.g. Hostel name or Apartment")
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     is_paid = models.BooleanField(default=False)
+    payment_status = models.CharField(
+        max_length=12, choices=PAYMENT_STATUS_CHOICES, default="pending"
+    )
+    checkout_request_id = models.CharField(max_length=100, blank=True, unique=True, null=True)
+    merchant_request_id = models.CharField(max_length=100, blank=True)
+    mpesa_receipt_number = models.CharField(max_length=30, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

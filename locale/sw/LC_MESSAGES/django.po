@@ -1,0 +1,116 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ecommerce_store 1.0\n"
+"PO-Revision-Date: 2026-09-30 00:00+0000\n"
+"Last-Translator: Store Maintainers\n"
+"Language-Team: Kiswahili\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: sw\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Home"
+msgstr "Nyumbani"
+
+msgid "Shop"
+msgstr "Duka"
+
+msgid "Single Page"
+msgstr "Ukurasa wa bidhaa"
+
+msgid "Pages"
+msgstr "Kurasa"
+
+msgid "Cart Page"
+msgstr "Kikapu"
+
+msgid "Checkout"
+msgstr "Malipo"
+
+msgid "Contact"
+msgstr "Wasiliana"
+
+msgid "Our Products"
+msgstr "Bidhaa Zetu"
+
+msgid "All Products"
+msgstr "Bidhaa Zote"
+
+msgid "Add to cart"
+msgstr "Ongeza kwenye kikapu"
+
+msgid "Product"
+msgstr "Bidhaa"
+
+msgid "Price"
+msgstr "Bei"
+
+msgid "Quantity"
+msgstr "Idadi"
+
+msgid "Total"
+msgstr "Jumla"
+
+msgid "Remove"
+msgstr "Ondoa"
+
+msgid "Update cart"
+msgstr "Sasisha kikapu"
+
+msgid "Subtotal"
+msgstr "Jumla ndogo"
+
+msgid "Proceed to checkout"
+msgstr "Endelea kwenye malipo"
+
+msgid "Your cart is empty."
+msgstr "Kikapu chako hakina bidhaa."
+
+msgid "Continue shopping"
+msgstr "Endelea kununua"
+
+msgid "We will send an M-Pesa payment prompt to this number."
+msgstr "Tutatumia ombi la malipo ya M-Pesa kwenye nambari hii."
+
+msgid "Total due"
+msgstr "Jumla ya kulipa"
+
+msgid "Pay with M-Pesa"
+msgstr "Lipa kwa M-Pesa"
+
+msgid "First name"
+msgstr "Jina la kwanza"
+
+msgid "Last name"
+msgstr "Jina la ukoo"
+
+msgid "M-Pesa phone number"
+msgstr "Nambari ya simu ya M-Pesa"
+
+msgid "M-Pesa payments must total a whole number of Kenya shillings."
+msgstr "Jumla ya malipo ya M-Pesa lazima iwe idadi kamili ya shilingi za Kenya."
+
+msgid "Delivery location"
+msgstr "Mahali pa kuwasilisha"
+
+msgid "Enter a Kenyan M-Pesa number, such as 0712345678 or 254712345678."
+msgstr "Weka nambari ya M-Pesa ya Kenya, kama 0712345678 au 254712345678."
+
+msgid "Quantity exceeds available stock."
+msgstr "Kiasi kinazidi bidhaa zilizopo."
+
+msgid "That product is not available."
+msgstr "Bidhaa hiyo haipatikani."
+
+msgid "Choose a quantity greater than zero."
+msgstr "Chagua kiasi zaidi ya sufuri."
+
+msgid "Product added to your cart."
+msgstr "Bidhaa imeongezwa kwenye kikapu chako."
+
+msgid "We could not start the M-Pesa payment. Your order %(order_id)s was saved; please try again or contact support."
+msgstr "Hatukuweza kuanzisha malipo ya M-Pesa. Agizo lako %(order_id)s limehifadhiwa; jaribu tena au wasiliana na usaidizi."
+
+msgid "Payment request sent. Enter your M-Pesa PIN on your phone to complete order %(order_id)s."
+msgstr "Ombi la malipo limetumwa. Weka PIN yako ya M-Pesa kwenye simu kukamilisha agizo %(order_id)s."

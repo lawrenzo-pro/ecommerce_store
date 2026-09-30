@@ -1,6 +1,7 @@
-{% load static %}
+{% load static i18n %}
+{% get_current_language as current_language %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_language }}">
 
 <head>
     <meta charset="utf-8">
@@ -72,12 +73,14 @@
                     </div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown"><small>
-                                English</small></a>
+                                {% if current_language == "sw" %}Kiswahili{% else %}English{% endif %}</small></a>
                         <div class="dropdown-menu rounded">
-                            <a href="#" class="dropdown-item"> English</a>
-                            <a href="#" class="dropdown-item"> Turkish</a>
-                            <a href="#" class="dropdown-item"> Spanol</a>
-                            <a href="#" class="dropdown-item"> Italiano</a>
+                            <form action="{% url 'set_language' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <button type="submit" name="language" value="en" class="dropdown-item">English</button>
+                                <button type="submit" name="language" value="sw" class="dropdown-item">Kiswahili</button>
+                            </form>
                         </div>
                     </div>
                     <div class="dropdown">
@@ -200,20 +203,20 @@
                     </button>
                     <div class="collapse navbar-collapse" id="navbarCollapse">
                         <div class="navbar-nav ms-auto py-0">
-                            <a href="{% url 'home' %}" class="nav-item nav-link">Home</a>
-                            <a href="{% url 'shop' %}" class="nav-item nav-link">Shop</a>
-                            <a href="{% url 'single' %}" class="nav-item nav-link active">Single Page</a>
+                            <a href="{% url 'home' %}" class="nav-item nav-link">{% translate "Home" %}</a>
+                            <a href="{% url 'shop' %}" class="nav-item nav-link">{% translate "Shop" %}</a>
+                            <a href="{% url 'single' %}" class="nav-item nav-link active">{% translate "Single Page" %}</a>
                             <div class="nav-item dropdown">
                                 <a href="#" class="nav-link" data-bs-toggle="dropdown"><span
-                                        class="dropdown-toggle">Pages</span></a>
+                                    class="dropdown-toggle">{% translate "Pages" %}</span></a>
                                 <div class="dropdown-menu m-0">
                                     <a href="bestseller.html" class="dropdown-item">Bestseller</a>
-                                    <a href="{% url 'cart' %}" class="dropdown-item">Cart Page</a>
-                                    <a href="{% url 'checkout' %}" class="dropdown-item">Cheackout</a>
+                                    <a href="{% url 'cart' %}" class="dropdown-item">{% translate "Cart Page" %}</a>
+                                    <a href="{% url 'checkout' %}" class="dropdown-item">{% translate "Checkout" %}</a>
                                     <a href="404.html" class="dropdown-item">404 Page</a>
                                 </div>
                             </div>
-                            <a href="contact.html" class="nav-item nav-link me-2">Contact</a>
+                            <a href="contact.html" class="nav-item nav-link me-2">{% translate "Contact" %}</a>
                             <div class="nav-item dropdown d-block d-lg-none mb-3">
                                 <a href="#" class="nav-link" data-bs-toggle="dropdown"><span class="dropdown-toggle">All
                                         Category</span></a>
