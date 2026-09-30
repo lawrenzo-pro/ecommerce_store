@@ -114,3 +114,66 @@ msgstr "Hatukuweza kuanzisha malipo ya M-Pesa. Agizo lako %(order_id)s limehifad
 
 msgid "Payment request sent. Enter your M-Pesa PIN on your phone to complete order %(order_id)s."
 msgstr "Ombi la malipo limetumwa. Weka PIN yako ya M-Pesa kwenye simu kukamilisha agizo %(order_id)s."
+
+msgid "My Dashboard"
+msgstr "Dashibodi Yangu"
+
+msgid "My Account"
+msgstr "Akaunti Yangu"
+
+msgid "My Orders"
+msgstr "Maagizo Yangu"
+
+msgid "Account Settings"
+msgstr "Mipangilio ya Akaunti"
+
+msgid "Log Out"
+msgstr "Toka"
+
+msgid "Login"
+msgstr "Ingia"
+
+msgid "Create Account"
+msgstr "Fungua Akaunti"
+
+msgid "Username"
+msgstr "Jina la mtumiaji"
+
+msgid "Password"
+msgstr "Nenosiri"
+
+msgid "Password confirmation"
+msgstr "Thibitisha nenosiri"
+
+msgid "Email address"
+msgstr "Anwani ya barua pepe"
+
+msgid "Signed in as"
+msgstr "Umeingia kama"
+
+msgid "Save changes"
+msgstr "Hifadhi mabadiliko"
+
+msgid "Order"
+msgstr "Agizo"
+
+msgid "Date"
+msgstr "Tarehe"
+
+msgid "Payment"
+msgstr "Malipo"
+
+msgid "No orders yet."
+msgstr "Bado huna maagizo."
+
+msgid "New to Electro?"
+msgstr "Je, wewe ni mteja mpya wa Electro?"
+
+msgid "Already registered?"
+msgstr "Tayari umesajiliwa?"
+
+msgid "Your account has been created."
+msgstr "Akaunti yako imefunguliwa."
+
+msgid "Your account details have been updated."
+msgstr "Maelezo ya akaunti yako yamesasishwa."

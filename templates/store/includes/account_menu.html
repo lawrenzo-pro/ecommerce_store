@@ -1,0 +1,21 @@
+{% load i18n %}
+<div class="dropdown">
+    <a href="{% if user.is_authenticated %}{% url 'account' %}{% else %}{% url 'login' %}{% endif %}"
+        class="dropdown-toggle text-muted ms-2" data-bs-toggle="dropdown">
+        <small><i class="fa fa-home me-2"></i>{% translate "My Dashboard" %}</small>
+    </a>
+    <div class="dropdown-menu rounded">
+        {% if user.is_authenticated %}
+        <a href="{% url 'account' %}" class="dropdown-item">{% translate "My Account" %}</a>
+        <a href="{% url 'account' %}#orders" class="dropdown-item">{% translate "My Orders" %}</a>
+        <a href="{% url 'account' %}#settings" class="dropdown-item">{% translate "Account Settings" %}</a>
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="dropdown-item">{% translate "Log Out" %}</button>
+        </form>
+        {% else %}
+        <a href="{% url 'login' %}" class="dropdown-item">{% translate "Login" %}</a>
+        <a href="{% url 'register' %}" class="dropdown-item">{% translate "Create Account" %}</a>
+        {% endif %}
+    </div>
+</div>

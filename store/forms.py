@@ -1,7 +1,41 @@
 import re
 
 from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
+
+
+class StoreAuthenticationForm(AuthenticationForm):
+    username = forms.CharField(
+        label=_("Username"), widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    password = forms.CharField(
+        label=_("Password"), widget=forms.PasswordInput(attrs={"class": "form-control"})
+    )
+
+
+class RegistrationForm(UserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs["class"] = "form-control"
+
+
+class AccountDetailsForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ("first_name", "last_name", "email")
+        labels = {
+            "first_name": _("First name"),
+            "last_name": _("Last name"),
+            "email": _("Email address"),
+        }
+        widgets = {
+            "first_name": forms.TextInput(attrs={"class": "form-control"}),
+            "last_name": forms.TextInput(attrs={"class": "form-control"}),
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+        }
 
 
 class CheckoutForm(forms.Form):

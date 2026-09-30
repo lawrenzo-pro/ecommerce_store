@@ -2,6 +2,7 @@ import json
 from decimal import Decimal
 from unittest.mock import patch
 
+from django.contrib.auth import get_user_model
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
@@ -101,6 +102,25 @@ class StorefrontWorkflowTests(TestCase):
 		self.assertEqual(Order.objects.count(), 0)
 		self.assertContains(response, "M-Pesa payments must total a whole number")
 
+	def test_checkout_associates_signed_in_customer_with_order(self):
+		user = get_user_model().objects.create_user(username="checkout-customer")
+		self.client.force_login(user)
+		self.set_cart()
+		with patch(
+			"store.views.initiate_stk_push",
+			return_value={"CheckoutRequestID": "ws_CO_customer_123"},
+		):
+			self.client.post(
+				reverse("checkout"),
+				{
+					"first_name": "Ada",
+					"last_name": "Njeri",
+					"phone_number": "0712345678",
+					"delivery_location": "Kilimani",
+				},
+			)
+		self.assertEqual(Order.objects.get().user, user)
+
 	def test_successful_callback_marks_order_paid_once(self):
 		order = Order.objects.create(
 			first_name="Ada",
@@ -173,6 +193,88 @@ class CheckoutFormTests(TestCase):
 			)
 			self.assertTrue(form.is_valid(), form.errors)
 			self.assertEqual(form.cleaned_data["phone_number"], normalized)
+
+
+@override_settings(ALLOWED_HOSTS=["localhost"])
+class AccountDashboardTests(TestCase):
+	def setUp(self):
+		self.client = Client(HTTP_HOST="localhost")
+		self.user_model = get_user_model()
+		self.user = self.user_model.objects.create_user(
+			username="account-holder", password="R8m$eZ4qV!7pL2x"
+		)
+
+	def test_guest_menu_offers_login_and_registration(self):
+		response = self.client.get(reverse("home"))
+		self.assertContains(response, reverse("login"))
+		self.assertContains(response, reverse("register"))
+
+	def test_authenticated_menu_and_account_are_localized(self):
+		self.client.force_login(self.user)
+		response = self.client.get(reverse("home"))
+		self.assertContains(response, reverse("account"))
+		self.assertContains(response, reverse("logout"))
+		self.client.post(
+			reverse("set_language"), {"language": "sw", "next": reverse("account")}
+		)
+		response = self.client.get(reverse("account"))
+		self.assertContains(response, 'lang="sw"')
+		self.assertContains(response, "Akaunti Yangu")
+
+	def test_registration_logs_in_and_opens_dashboard(self):
+		response = self.client.post(
+			reverse("register"),
+			{
+				"username": "new-customer",
+				"password1": "R8m$eZ4qV!7pL2x",
+				"password2": "R8m$eZ4qV!7pL2x",
+			},
+		)
+		self.assertRedirects(response, reverse("account"), fetch_redirect_response=False)
+		self.assertEqual(self.client.get(reverse("account")).status_code, 200)
+		self.assertContains(self.client.get(reverse("home")), reverse("logout"))
+
+	def test_login_redirects_to_dashboard_and_logout_requires_post(self):
+		response = self.client.post(
+			reverse("login"),
+			{"username": "account-holder", "password": "R8m$eZ4qV!7pL2x"},
+		)
+		self.assertRedirects(response, reverse("account"), fetch_redirect_response=False)
+		self.assertEqual(self.client.get(reverse("logout")).status_code, 405)
+		response = self.client.post(reverse("logout"))
+		self.assertRedirects(response, reverse("home"), fetch_redirect_response=False)
+		self.assertNotIn("_auth_user_id", self.client.session)
+
+	def test_dashboard_updates_profile_and_only_shows_own_orders(self):
+		other_user = self.user_model.objects.create_user(username="other-customer")
+		own_order = Order.objects.create(
+			user=self.user,
+			first_name="Account",
+			last_name="Holder",
+			phone_number="254712345678",
+			delivery_location="Nairobi",
+			total_cost="500.00",
+		)
+		other_order = Order.objects.create(
+			user=other_user,
+			first_name="Other",
+			last_name="Customer",
+			phone_number="254712345678",
+			delivery_location="Nairobi",
+			total_cost="250.00",
+		)
+		self.client.force_login(self.user)
+		response = self.client.get(reverse("account"))
+		self.assertContains(response, f"#{own_order.pk}")
+		self.assertNotContains(response, f"#{other_order.pk}")
+
+		response = self.client.post(
+			reverse("account"),
+			{"first_name": "Amina", "last_name": "Wanjiku", "email": "amina@example.com"},
+		)
+		self.assertRedirects(response, reverse("account"), fetch_redirect_response=False)
+		self.user.refresh_from_db()
+		self.assertEqual(self.user.first_name, "Amina")
 
 
 @override_settings(

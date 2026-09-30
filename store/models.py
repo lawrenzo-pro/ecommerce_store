@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 class Category(models.Model):
@@ -35,6 +36,13 @@ class Order(models.Model):
 
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="orders",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
     # Crucial for the Daraja STK Push:
     phone_number = models.CharField(max_length=15, help_text="Format: 2547XXXXXXXX")
     delivery_location = models.CharField(max_length=250, help_text="e.g. Hostel name or Apartment")

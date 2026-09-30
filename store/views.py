@@ -2,6 +2,8 @@ import json
 import logging
 from decimal import Decimal, ROUND_HALF_UP
 
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import transaction
 from django.http import JsonResponse
@@ -10,7 +12,7 @@ from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .forms import CheckoutForm
+from .forms import AccountDetailsForm, CheckoutForm, RegistrationForm
 from .models import Order, OrderItem, Product
 from .services.mpesa import MpesaError, initiate_stk_push
 
@@ -111,6 +113,7 @@ def checkout(request):
 			return render(request, "store/checkout.html", {"form": form, "cart_items": items, "subtotal": subtotal})
 		with transaction.atomic():
 			order = Order.objects.create(
+				user=request.user if request.user.is_authenticated else None,
 				first_name=form.cleaned_data["first_name"],
 				last_name=form.cleaned_data["last_name"],
 				phone_number=form.cleaned_data["phone_number"],
@@ -142,6 +145,29 @@ def checkout(request):
 			return redirect("cart")
 		return redirect("checkout")
 	return render(request, "store/checkout.html", {"form": form, "cart_items": items, "subtotal": subtotal})
+
+
+def register(request):
+	if request.user.is_authenticated:
+		return redirect("account")
+	form = RegistrationForm(request.POST or None)
+	if request.method == "POST" and form.is_valid():
+		user = form.save()
+		login(request, user)
+		messages.success(request, _("Your account has been created."))
+		return redirect("account")
+	return render(request, "store/register.html", {"form": form})
+
+
+@login_required
+def account(request):
+	form = AccountDetailsForm(request.POST or None, instance=request.user)
+	if request.method == "POST" and form.is_valid():
+		form.save()
+		messages.success(request, _("Your account details have been updated."))
+		return redirect("account")
+	orders = request.user.orders.prefetch_related("items__product").order_by("-created")
+	return render(request, "store/account.html", {"form": form, "orders": orders})
 
 
 @csrf_exempt

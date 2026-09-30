@@ -1,0 +1,67 @@
+{% load static i18n %}
+{% get_current_language as current_language %}
+<!DOCTYPE html>
+<html lang="{{ current_language }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% translate "My Account" %} | Electro</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+</head>
+<body>
+    <header class="container-fluid bg-primary py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="text-white h3 mb-0 text-decoration-none" href="{% url 'home' %}">Electro</a>
+            <a class="text-white" href="{% url 'home' %}">{% translate "Continue shopping" %}</a>
+        </div>
+    </header>
+    <main class="container py-5">
+        <h1 class="mb-4">{% translate "My Account" %}</h1>
+        {% for message in messages %}<div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>{% endfor %}
+        <div class="row g-5">
+            <section class="col-lg-5" id="settings">
+                <h2 class="h4 mb-3">{% translate "Account Settings" %}</h2>
+                <p class="text-muted">{% translate "Signed in as" %} {{ request.user.username }}</p>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">{% translate "Save changes" %}</button>
+                </form>
+                <form class="mt-3" action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-secondary">{% translate "Log Out" %}</button>
+                </form>
+            </section>
+            <section class="col-lg-7" id="orders">
+                <h2 class="h4 mb-3">{% translate "My Orders" %}</h2>
+                {% if orders %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>{% translate "Order" %}</th><th>{% translate "Date" %}</th><th>{% translate "Total" %}</th><th>{% translate "Payment" %}</th></tr></thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <th>#{{ order.pk }}</th>
+                                <td>{{ order.created|date:"DATE_FORMAT" }}</td>
+                                <td>KSh {{ order.total_cost|floatformat:2 }}</td>
+                                <td>{{ order.get_payment_status_display }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">{% translate "No orders yet." %}</p>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+</body>
+</html>
