@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local environment configuration
+.env*
+!.env.example
+
+# Local databases and logs
+*.sqlite3
+*.log
+
+# Django generated files
+/staticfiles/
+/media/uploads/
+
+# Test and tooling caches
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Editor and operating system files
+.vscode/
+.idea/
+.DS_Store
