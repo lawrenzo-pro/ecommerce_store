@@ -74,7 +74,7 @@ def home(request):
 	products = products.order_by("-created")
 	featured_products = list(products.order_by("?")[:3])
 	wishlisted_product_ids = _wishlisted_product_ids(request.user, products)
-	homepage_products = products[:8]
+	homepage_products = list(products.order_by("?")[:4])
 	return render(
 		request,
 		"store/index.html",
@@ -83,7 +83,6 @@ def home(request):
 			"featured_products": featured_products,
 			"featured_product": featured_products[0] if featured_products else None,
 			"wishlisted_product_ids": wishlisted_product_ids,
-			"has_more_products": products.count() > 8,
 			"query": query,
 			"selected_category": category_slug,
 		},

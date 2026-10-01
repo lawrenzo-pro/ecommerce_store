@@ -233,18 +233,6 @@
     <!-- Navbar & Hero End -->
 
     {% block content %}
-    <!-- Single Page Header start -->
-    <div class="container-fluid page-header py-5">
-        <h1 class="text-center text-white display-6 wow fadeInUp" data-wow-delay="0.1s">{% if category %}{{ category.name }}{% else %}{% translate "Shop" %}{% endif %}</h1>
-        <ol class="breadcrumb justify-content-center mb-0 wow fadeInUp" data-wow-delay="0.3s">
-            <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item"><a href="#">Pages</a></li>
-            <li class="breadcrumb-item active text-white">Shop</li>
-        </ol>
-    </div>
-    <!-- Single Page Header End -->
-
-    <!-- Shop Page Start -->
     {% comment %}
     <div class="container-fluid shop py-5">
         <div class="container py-5">
@@ -1423,7 +1411,7 @@
             </div>
         </div>
     </div>
-    <!-- Shop Page End -->
+
 
     {% endblock content %}
 

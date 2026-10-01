@@ -171,7 +171,7 @@ class StorefrontWorkflowTests(TestCase):
 				reverse("product_detail", kwargs={"slug": product.slug}),
 			)
 
-	def test_homepage_shows_a_product_sample_and_shop_shows_the_full_catalog(self):
+	def test_homepage_shows_only_a_small_product_sample(self):
 		for index in range(8):
 			Product.objects.create(
 				category=self.category,
@@ -181,12 +181,18 @@ class StorefrontWorkflowTests(TestCase):
 			)
 
 		home_response = self.client.get(reverse("home"))
-		shop_response = self.client.get(reverse("shop"))
 
-		self.assertEqual(len(home_response.context["products"]), 8)
-		self.assertTrue(home_response.context["has_more_products"])
-		self.assertContains(home_response, "View all products")
-		self.assertEqual(len(shop_response.context["products"]), 9)
+		self.assertEqual(len(home_response.context["products"]), 4)
+		self.assertNotContains(home_response, "View all products")
+
+	def test_category_page_has_no_breadcrumb_or_page_banner(self):
+		response = self.client.get(
+			reverse("category", kwargs={"slug": self.category.slug})
+		)
+
+		self.assertNotContains(response, "breadcrumb")
+		self.assertNotContains(response, "Pages")
+		self.assertNotContains(response, 'class="container-fluid page-header')
 
 	def test_category_page_omits_generic_service_promises(self):
 		response = self.client.get(
