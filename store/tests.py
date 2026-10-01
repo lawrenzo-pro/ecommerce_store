@@ -280,6 +280,14 @@ class StorefrontWorkflowTests(TestCase):
 		self.assertIn('aria-label="Browse categories"', nav)
 		self.assertIn('class="fas fa-shopping-cart"', nav)
 		self.assertEqual(nav.count('class="nav-item nav-link'), 1)
+		for footer_detail in (
+			"University of Eldoret, Main Campus",
+			"ayutide@iuiu.ac.ug",
+			"+254 700 000 000",
+			"mailto:",
+			"tel:",
+		):
+			self.assertNotIn(footer_detail, content)
 		self.assertNotContains(response, "My Dashboard")
 		for route_name in (
 			"home", "shop", "single", "cart", "login", "register"
