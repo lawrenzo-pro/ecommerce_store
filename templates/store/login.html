@@ -1,17 +1,9 @@
-{% load static i18n %}
-{% get_current_language as current_language %}
-<!DOCTYPE html>
-<html lang="{{ current_language }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% translate "Login" %} | Electro</title>
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'css/style.css' %}" rel="stylesheet">
-</head>
-<body>
+{% extends "store/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Login" %} | EldoMarket{% endblock %}
+{% block content %}
     <main class="container py-5" style="max-width: 540px;">
-        <a class="text-decoration-none h3 text-primary" href="{% url 'home' %}">Electro</a>
         <h1 class="h2 mt-4">{% translate "Login" %}</h1>
         {% for message in messages %}<div class="alert alert-{{ message.tags }}" role="alert">{{ message }}</div>{% endfor %}
         <form method="post" class="mt-4">
@@ -27,7 +19,6 @@
             {% endfor %}
             <button type="submit" class="btn btn-primary w-100">{% translate "Login" %}</button>
         </form>
-        <p class="mt-4">{% translate "New to Electro?" %} <a href="{% url 'register' %}">{% translate "Create Account" %}</a></p>
+        <p class="mt-4">{% translate "New to EldoMarket?" %} <a href="{% url 'register' %}">{% translate "Create Account" %}</a></p>
     </main>
-</body>
-</html>
+{% endblock content %}

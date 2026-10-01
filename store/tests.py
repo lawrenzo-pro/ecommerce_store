@@ -147,6 +147,27 @@ class StorefrontWorkflowTests(TestCase):
 				for old_currency in ("$", "USD", "Euro", "Dolar", "KSh"):
 					self.assertNotIn(old_currency, content)
 
+	def test_storefront_pages_share_base_layout_without_legacy_chrome(self):
+		self.set_cart()
+		for route_name in (
+			"home", "shop", "single", "cart", "checkout", "login", "register"
+		):
+			with self.subTest(route=route_name):
+				response = self.client.get(reverse(route_name))
+				self.assertEqual(response.status_code, 200)
+				self.assertContains(response, "EldoMarket")
+				self.assertNotContains(response, "123 Street New York")
+				self.assertNotContains(response, "+0123 456 7890")
+				self.assertNotContains(response, ">Single Page</a>")
+				self.assertNotContains(response, "bestseller.html")
+				self.assertNotContains(response, "404.html")
+		user = get_user_model().objects.create_user(username="base-layout-customer")
+		self.client.force_login(user)
+		response = self.client.get(reverse("account"))
+		self.assertContains(response, "EldoMarket")
+		self.assertNotContains(response, "Electro")
+		self.assertNotContains(response, "123 Street New York")
+
 	def test_checkout_creates_order_and_requests_stk_push(self):
 		self.set_cart(quantity=2)
 		checkout_response = {

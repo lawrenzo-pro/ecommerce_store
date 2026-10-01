@@ -1,16 +1,8 @@
-{% load static %}
+{% extends "store/base.html" %}
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Welcome to our store</title>
-	</head>
-	<body>
-		<main>
-			<h1>Welcome to our store</h1>
-			<p>Our online storefront is getting ready.</p>
-		</main>
-	</body>
-</html>
+{% block content %}
+    <main class="container py-5">
+        <h1>Welcome to EldoMarket</h1>
+        <p>Our online storefront is getting ready.</p>
+    </main>
+{% endblock content %}
