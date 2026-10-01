@@ -5,6 +5,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -46,13 +47,23 @@ def _cart_summary(request):
 
 
 def home(request):
+	query = request.GET.get("q", "").strip()
 	products = Product.objects.filter(
 		is_available=True, stock__gt=0
-	).select_related("category").order_by("-created")
+	).select_related("category")
+	if query:
+		products = products.filter(
+			Q(name__icontains=query) | Q(description__icontains=query)
+		)
+	products = products.order_by("-created")
 	return render(
 		request,
 		"store/index.html",
-		{"products": products, "featured_product": products.first()},
+		{
+			"products": products,
+			"featured_product": products.first(),
+			"query": query,
+		},
 	)
 
 

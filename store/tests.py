@@ -56,6 +56,55 @@ class StorefrontWorkflowTests(TestCase):
 		)
 		self.assertEqual(self.client.session["cart"][str(self.product.pk)], 1)
 
+	def test_homepage_search_matches_product_name_and_description(self):
+		laptop = Product.objects.create(
+			category=self.category,
+			name="Laptop",
+			slug="laptop",
+			description="Portable workstation",
+			price="750.00",
+		)
+		camera = Product.objects.create(
+			category=self.category,
+			name="Digital camera",
+			slug="digital-camera",
+			description="Compact device with optical zoom",
+			price="300.00",
+		)
+
+		response = self.client.get(reverse("home"), {"q": "laptop"})
+		self.assertEqual(response.context["query"], "laptop")
+		self.assertContains(response, "Laptop")
+		self.assertNotContains(response, "Test phone")
+		self.assertNotContains(response, "Digital camera")
+		self.assertContains(response, 'value="laptop"')
+		self.assertEqual(list(response.context["products"]), [laptop])
+
+		response = self.client.get(reverse("home"), {"q": "optical zoom"})
+		self.assertEqual(list(response.context["products"]), [camera])
+		self.assertContains(response, "optical zoom")
+
+	def test_homepage_search_only_returns_available_in_stock_products(self):
+		unavailable_product = Product.objects.create(
+			category=self.category,
+			name="Unavailable laptop",
+			slug="unavailable-laptop",
+			price="500.00",
+			is_available=False,
+		)
+		out_of_stock_product = Product.objects.create(
+			category=self.category,
+			name="Out of stock laptop",
+			slug="out-of-stock-laptop",
+			price="500.00",
+			stock=0,
+		)
+
+		response = self.client.get(reverse("home"), {"q": "laptop"})
+
+		self.assertNotContains(response, unavailable_product.name)
+		self.assertNotContains(response, out_of_stock_product.name)
+
 	def test_shop_and_single_pages_use_database_product_for_add_button(self):
 		for route_name in ("home", "shop", "single"):
 			with self.subTest(route=route_name):
