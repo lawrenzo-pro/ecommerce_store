@@ -61,9 +61,9 @@
     </header>
 
     <div class="container-fluid nav-bar p-0">
-        <div class="row gx-0 bg-primary px-5 align-items-center">
-            <div class="col-3 col-lg-3">
-                <nav class="navbar navbar-light position-relative">
+        <div class="row gx-0 bg-white border-top border-bottom px-3 px-lg-5 align-items-center">
+            <div class="col-auto d-lg-none">
+                <nav class="navbar navbar-light position-relative p-0">
                     <button class="navbar-toggler border-0 fs-4 px-0 text-start" type="button"
                         data-bs-toggle="collapse" data-bs-target="#allCat"
                         aria-label="{% translate 'Browse categories' %}">
@@ -75,8 +75,7 @@
                                 {% for category in store_categories %}
                                 <li>
                                     <div class="categories-bars-item">
-                                        <a href="{% url 'home' %}?category={{ category.slug|urlencode }}">{{ category.name }}</a>
-                                        <span>({{ category.available_product_count }})</span>
+                                        <a href="{% url 'category' slug=category.slug %}">{{ category.name }}</a>
                                     </div>
                                 </li>
                                 {% empty %}
@@ -87,8 +86,14 @@
                     </div>
                 </nav>
             </div>
-            <div class="col-9 col-lg-9">
-                <nav class="navbar navbar-light bg-primary justify-content-end">
+            <nav class="col d-none d-lg-flex align-items-center justify-content-center gap-4 py-2"
+                aria-label="{% translate 'Shop by category' %}">
+                {% for category in store_categories %}
+                <a class="text-dark text-nowrap" href="{% url 'category' slug=category.slug %}">{{ category.name }}</a>
+                {% endfor %}
+            </nav>
+            <div class="col-auto">
+                <nav class="navbar navbar-light justify-content-end p-0">
                     <a href="{% url 'cart' %}" class="nav-item nav-link px-3{% if request.resolver_match.url_name == 'cart' %} active{% endif %}"
                         aria-label="{% translate 'Cart' %}" title="{% translate 'Cart' %}">
                         <i class="fas fa-shopping-cart"></i>

@@ -4,7 +4,20 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
 from store.forms import StoreAuthenticationForm
-from store.views import account, add_to_cart, cart, checkout, home, mpesa_callback, register, shop, single
+from store.views import (
+	account,
+	add_to_cart,
+	cart,
+	category_products,
+	checkout,
+	home,
+	mpesa_callback,
+	product_detail,
+	register,
+	shop,
+	single,
+	toggle_wishlist,
+)
 
 urlpatterns = [
 	path("", home, name="home"),
@@ -20,6 +33,9 @@ urlpatterns = [
 	path("accounts/logout/", LogoutView.as_view(next_page="home"), name="logout"),
 	path("account/", account, name="account"),
 	path("shop/", shop, name="shop"),
+	path("categories/<slug:slug>/", category_products, name="category"),
+	path("products/<slug:slug>/", product_detail, name="product_detail"),
+	path("products/<slug:slug>/wishlist/", toggle_wishlist, name="toggle_wishlist"),
 	path("single/", single, name="single"),
 	path("admin/", admin.site.urls),
 	path("i18n/", include("django.conf.urls.i18n")),

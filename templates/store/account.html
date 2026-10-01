@@ -49,5 +49,39 @@
                 {% endif %}
             </section>
         </div>
+        <section class="mt-5" id="wishlist">
+            <h2 class="h4 mb-3">{% translate "Wishlist" %}</h2>
+            {% if wishlist_items %}
+            <div class="row g-4">
+                {% for item in wishlist_items %}
+                <article class="col-sm-6 col-lg-4 col-xl-3">
+                    <div class="product-item rounded border p-3 h-100">
+                        <a href="{% url 'product_detail' slug=item.product.slug %}">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" class="catalog-product-image img-fluid mb-3" alt="{{ item.product.name }}">
+                            {% else %}
+                            <div class="product-image-placeholder bg-light d-flex align-items-center justify-content-center mb-3">
+                                <i class="fas fa-image fa-3x text-muted" aria-hidden="true"></i>
+                            </div>
+                            {% endif %}
+                            <h3 class="h5">{{ item.product.name }}</h3>
+                        </a>
+                        <p class="text-primary">KES {{ item.product.price|floatformat:2 }}</p>
+                        <form action="{% url 'toggle_wishlist' slug=item.product.slug %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove">
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}#wishlist">
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="fas fa-heart-broken me-2"></i>{% translate "Remove" %}
+                            </button>
+                        </form>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">{% translate "Your wishlist is empty." %}</p>
+            {% endif %}
+        </section>
     </main>
 {% endblock content %}

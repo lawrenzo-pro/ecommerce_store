@@ -7,7 +7,7 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
 from .forms import CheckoutForm
-from .models import Category, Order, Product
+from .models import Category, Order, Product, WishlistItem
 
 
 @override_settings(ALLOWED_HOSTS=["localhost"])
@@ -119,8 +119,10 @@ class StorefrontWorkflowTests(TestCase):
 		response = self.client.get(reverse("home"))
 		self.assertContains(response, "Electronics")
 		self.assertContains(response, "Hostel Living")
-		self.assertContains(response, f'?category={other_category.slug}')
-		self.assertContains(response, "(1)")
+		self.assertContains(
+			response, reverse("category", kwargs={"slug": other_category.slug})
+		)
+		self.assertNotContains(response, "(1)")
 
 		for route_name in ("home", "shop"):
 			with self.subTest(route=route_name):
@@ -130,6 +132,44 @@ class StorefrontWorkflowTests(TestCase):
 				self.assertEqual(list(response.context["products"]), [other_product])
 				self.assertContains(response, "Desk lamp")
 				self.assertNotContains(response, "Test phone")
+
+		category_response = self.client.get(
+			reverse("category", kwargs={"slug": other_category.slug})
+		)
+		self.assertEqual(category_response.status_code, 200)
+		self.assertEqual(category_response.context["category"], other_category)
+		self.assertEqual(list(category_response.context["products"]), [other_product])
+
+	def test_product_detail_page_displays_description(self):
+		self.product.description = "A durable phone for everyday campus use."
+		self.product.save(update_fields=["description"])
+
+		response = self.client.get(
+			reverse("product_detail", kwargs={"slug": self.product.slug})
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, self.product.name)
+		self.assertContains(response, self.product.description)
+
+	def test_homepage_features_random_products_from_the_visible_catalog(self):
+		second_product = Product.objects.create(
+			category=self.category,
+			name="Test laptop",
+			slug="test-laptop",
+			price="800.00",
+		)
+		response = self.client.get(reverse("home"))
+		featured_products = response.context["featured_products"]
+
+		self.assertGreaterEqual(len(featured_products), 1)
+		self.assertLessEqual(len(featured_products), 3)
+		self.assertEqual(set(featured_products), {self.product, second_product})
+		for product in featured_products:
+			self.assertContains(
+				response,
+				reverse("product_detail", kwargs={"slug": product.slug}),
+			)
 
 	def test_catalog_uses_uploaded_product_image_url(self):
 		from django.core.files.uploadedfile import SimpleUploadedFile
@@ -230,7 +270,7 @@ class StorefrontWorkflowTests(TestCase):
 		self.client.force_login(user)
 		response = self.client.get(reverse("account"))
 		self.assertContains(response, "EldoMarket")
-		self.assertNotContains(response, "Electro")
+		self.assertNotContains(response, "Electro - Electronics Website Template")
 		self.assertNotContains(response, "123 Street New York")
 
 	def test_checkout_creates_order_and_requests_stk_push(self):
@@ -486,6 +526,50 @@ class AccountDashboardTests(TestCase):
 		self.assertRedirects(response, reverse("account"), fetch_redirect_response=False)
 		self.user.refresh_from_db()
 		self.assertEqual(self.user.first_name, "Amina")
+
+	def test_wishlist_add_remove_and_account_listing_are_user_specific(self):
+		category = Category.objects.create(name="Wishlist Category", slug="wishlist")
+		product = Product.objects.create(
+			category=category,
+			name="Wishlist phone",
+			slug="wishlist-phone",
+			price="225.00",
+		)
+		other_user = self.user_model.objects.create_user(username="other-wishlist-user")
+		self.client.force_login(self.user)
+
+		response = self.client.post(
+			reverse("toggle_wishlist", kwargs={"slug": product.slug}),
+			{"action": "add", "next": reverse("account")},
+		)
+		self.assertRedirects(response, reverse("account"), fetch_redirect_response=False)
+		self.assertTrue(
+			WishlistItem.objects.filter(user=self.user, product=product).exists()
+		)
+		self.client.post(
+			reverse("toggle_wishlist", kwargs={"slug": product.slug}),
+			{"action": "add", "next": reverse("account")},
+		)
+		self.assertEqual(
+			WishlistItem.objects.filter(user=self.user, product=product).count(), 1
+		)
+		account_response = self.client.get(reverse("account"))
+		self.assertContains(account_response, product.name)
+		self.assertEqual(
+			list(account_response.context["wishlist_items"].values_list("product", flat=True)),
+			[product.pk],
+		)
+		self.assertFalse(
+			WishlistItem.objects.filter(user=other_user, product=product).exists()
+		)
+
+		self.client.post(
+			reverse("toggle_wishlist", kwargs={"slug": product.slug}),
+			{"action": "remove", "next": reverse("account")},
+		)
+		self.assertFalse(
+			WishlistItem.objects.filter(user=self.user, product=product).exists()
+		)
 
 
 @override_settings(

@@ -4,21 +4,34 @@ from decimal import Decimal, ROUND_HALF_UP
 
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.contrib import messages
 from django.db.models import Q
 from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext as _
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .forms import AccountDetailsForm, CheckoutForm, RegistrationForm
-from .models import Category, Order, OrderItem, Product
+from .models import Category, Order, OrderItem, Product, WishlistItem
 from .services.mpesa import MpesaError, initiate_stk_push
 
 logger = logging.getLogger(__name__)
 CART_SESSION_KEY = "cart"
+
+
+def _wishlisted_product_ids(user, products):
+	if not user.is_authenticated:
+		return set()
+	return set(
+		WishlistItem.objects.filter(
+			user=user, product__in=products
+		).values_list("product_id", flat=True)
+	)
 
 
 def _cart_summary(request):
@@ -59,12 +72,16 @@ def home(request):
 	if category_slug:
 		products = products.filter(category__slug=category_slug)
 	products = products.order_by("-created")
+	featured_products = list(products.order_by("?")[:3])
+	wishlisted_product_ids = _wishlisted_product_ids(request.user, products)
 	return render(
 		request,
 		"store/index.html",
 		{
 			"products": products,
-			"featured_product": products.first(),
+			"featured_products": featured_products,
+			"featured_product": featured_products[0] if featured_products else None,
+			"wishlisted_product_ids": wishlisted_product_ids,
 			"query": query,
 			"selected_category": category_slug,
 		},
@@ -220,7 +237,41 @@ def account(request):
 		messages.success(request, _("Your account details have been updated."))
 		return redirect("account")
 	orders = request.user.orders.prefetch_related("items__product").order_by("-created")
-	return render(request, "store/account.html", {"form": form, "orders": orders})
+	wishlist_items = request.user.wishlist_items.select_related(
+		"product", "product__category"
+	)
+	return render(
+		request,
+		"store/account.html",
+		{"form": form, "orders": orders, "wishlist_items": wishlist_items},
+	)
+
+
+@require_POST
+def toggle_wishlist(request, slug):
+	if not request.user.is_authenticated:
+		detail_url = reverse("product_detail", kwargs={"slug": slug})
+		return redirect_to_login(detail_url)
+	product = get_object_or_404(Product, slug=slug)
+	action = request.POST.get("action", "add")
+	if action == "remove":
+		WishlistItem.objects.filter(user=request.user, product=product).delete()
+		messages.info(request, _("Product removed from your wishlist."))
+	elif action == "add":
+		if product.is_available:
+			WishlistItem.objects.get_or_create(user=request.user, product=product)
+			messages.success(request, _("Product added to your wishlist."))
+		else:
+			messages.error(request, _("This product is no longer available."))
+	else:
+		messages.error(request, _("Invalid wishlist action."))
+
+	next_url = request.POST.get("next", "")
+	if next_url and url_has_allowed_host_and_scheme(
+		next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+	):
+		return redirect(next_url)
+	return redirect("product_detail", slug=product.slug)
 
 
 @csrf_exempt
@@ -268,10 +319,57 @@ def shop(request):
 	if category_slug:
 		products = products.filter(category__slug=category_slug)
 	products = products.order_by("-created")
+	wishlisted_product_ids = _wishlisted_product_ids(request.user, products)
 	return render(
 		request,
 		"store/shop.html",
-		{"products": products, "query": query, "selected_category": category_slug},
+		{
+			"products": products,
+			"query": query,
+			"selected_category": category_slug,
+			"wishlisted_product_ids": wishlisted_product_ids,
+		},
+	)
+
+
+def category_products(request, slug):
+	category = get_object_or_404(Category, slug=slug)
+	query = request.GET.get("q", "").strip()
+	products = Product.objects.filter(
+		category=category, is_available=True, stock__gt=0
+	).select_related("category")
+	if query:
+		products = products.filter(
+			Q(name__icontains=query) | Q(description__icontains=query)
+		)
+	products = products.order_by("-created")
+	wishlisted_product_ids = _wishlisted_product_ids(request.user, products)
+	return render(
+		request,
+		"store/shop.html",
+		{
+			"products": products,
+			"query": query,
+			"selected_category": category.slug,
+			"category": category,
+			"wishlisted_product_ids": wishlisted_product_ids,
+		},
+	)
+
+
+def product_detail(request, slug):
+	product = get_object_or_404(
+		Product.objects.select_related("category"),
+		slug=slug,
+		is_available=True,
+	)
+	is_wishlisted = request.user.is_authenticated and WishlistItem.objects.filter(
+		user=request.user, product=product
+	).exists()
+	return render(
+		request,
+		"store/product_detail.html",
+		{"product": product, "is_wishlisted": is_wishlisted},
 	)
 
 

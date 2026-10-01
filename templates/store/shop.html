@@ -1455,20 +1455,22 @@
     {% endcomment %}
     <div class="container-fluid shop py-5">
         <div class="container py-5">
-            <h1 class="mb-4">{% translate "Shop" %}</h1>
+            <h1 class="mb-4">{% if category %}{{ category.name }}{% else %}{% translate "Shop" %}{% endif %}</h1>
             <div class="row g-4">
                 {% for product in products %}
                 <div class="col-sm-6 col-lg-4 col-xl-3">
                     <div class="product-item rounded border p-3 h-100">
-                        {% if product.image %}
-                        <img src="{{ product.image.url }}" class="catalog-product-image img-fluid mb-3" alt="{{ product.name }}">
-                        {% else %}
-                        <div class="product-image-placeholder bg-light d-flex align-items-center justify-content-center mb-3">
-                            <i class="fas fa-image fa-3x text-muted" aria-hidden="true"></i>
-                        </div>
-                        {% endif %}
-                        <p class="text-muted mb-1">{{ product.category.name }}</p>
-                        <h2 class="h5">{{ product.name }}</h2>
+                        <a href="{% url 'product_detail' slug=product.slug %}" aria-label="{{ product.name }}">
+                            {% if product.image %}
+                            <img src="{{ product.image.url }}" class="catalog-product-image img-fluid mb-3" alt="{{ product.name }}">
+                            {% else %}
+                            <div class="product-image-placeholder bg-light d-flex align-items-center justify-content-center mb-3">
+                                <i class="fas fa-image fa-3x text-muted" aria-hidden="true"></i>
+                            </div>
+                            {% endif %}
+                        </a>
+                        <p class="text-muted mb-1"><a href="{% url 'category' slug=product.category.slug %}">{{ product.category.name }}</a></p>
+                        <h2 class="h5"><a href="{% url 'product_detail' slug=product.slug %}">{{ product.name }}</a></h2>
                         <p class="text-primary fs-5">KES {{ product.price|floatformat:2 }}</p>
                         <form action="{% url 'add_to_cart' %}" method="post">
                             {% csrf_token %}
@@ -1476,6 +1478,15 @@
                             <input type="hidden" name="quantity" value="1">
                             <button type="submit" class="btn btn-primary rounded-pill px-4">
                                 <i class="fas fa-shopping-cart me-2"></i> {% translate "Add to cart" %}
+                            </button>
+                        </form>
+                        <form class="mt-2" action="{% url 'toggle_wishlist' slug=product.slug %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="{% if product.pk in wishlisted_product_ids %}remove{% else %}add{% endif %}">
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                                <i class="fas fa-heart me-2"></i>
+                                {% if product.pk in wishlisted_product_ids %}{% translate "Remove from wishlist" %}{% else %}{% translate "Add to wishlist" %}{% endif %}
                             </button>
                         </form>
                     </div>

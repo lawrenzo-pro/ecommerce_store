@@ -26,6 +26,28 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+
+class WishlistItem(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="wishlist_items", on_delete=models.CASCADE
+    )
+    product = models.ForeignKey(
+        Product, related_name="wishlist_items", on_delete=models.CASCADE
+    )
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("user", "product"), name="unique_user_wishlist_product"
+            )
+        ]
+        ordering = ("-created",)
+
+    def __str__(self):
+        return f"{self.user} - {self.product}"
+
+
 class Order(models.Model):
     PAYMENT_STATUS_CHOICES = [
         ("pending", "Pending"),

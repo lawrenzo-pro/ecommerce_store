@@ -8,6 +8,7 @@
         {% if user.is_authenticated %}
         <a href="{% url 'account' %}" class="dropdown-item">{% translate "My Account" %}</a>
         <a href="{% url 'account' %}#orders" class="dropdown-item">{% translate "My Orders" %}</a>
+        <a href="{% url 'account' %}#wishlist" class="dropdown-item">{% translate "Wishlist" %}</a>
         <a href="{% url 'account' %}#settings" class="dropdown-item">{% translate "Account Settings" %}</a>
         <form action="{% url 'logout' %}" method="post">
             {% csrf_token %}
