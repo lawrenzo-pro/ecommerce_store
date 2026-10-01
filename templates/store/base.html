@@ -63,7 +63,7 @@
     <div class="container-fluid nav-bar p-0">
         <div class="row gx-0 bg-primary px-5 align-items-center">
             <div class="col-3 col-lg-3">
-                <nav class="navbar navbar-light position-relative" style="width: 250px;">
+                <nav class="navbar navbar-light position-relative">
                     <button class="navbar-toggler border-0 fs-4 px-0 text-start" type="button"
                         data-bs-toggle="collapse" data-bs-target="#allCat"
                         aria-label="{% translate 'Browse categories' %}">
@@ -80,20 +80,12 @@
                     </div>
                 </nav>
             </div>
-            <div class="col-12 col-lg-9">
-                <nav class="navbar navbar-expand-lg navbar-light bg-primary">
-                    <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarCollapse" aria-label="{% translate 'Toggle navigation' %}">
-                        <span class="fa fa-bars fa-1x"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarCollapse">
-                        <div class="navbar-nav ms-auto py-0 flex-row">
-                            <a href="{% url 'cart' %}" class="nav-item nav-link px-3{% if request.resolver_match.url_name == 'cart' %} active{% endif %}"
-                                aria-label="{% translate 'Cart' %}" title="{% translate 'Cart' %}">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                        </div>
-                    </div>
+            <div class="col-9 col-lg-9">
+                <nav class="navbar navbar-light bg-primary justify-content-end">
+                    <a href="{% url 'cart' %}" class="nav-item nav-link px-3{% if request.resolver_match.url_name == 'cart' %} active{% endif %}"
+                        aria-label="{% translate 'Cart' %}" title="{% translate 'Cart' %}">
+                        <i class="fas fa-shopping-cart"></i>
+                    </a>
                 </nav>
             </div>
         </div>

@@ -150,7 +150,19 @@ class StorefrontWorkflowTests(TestCase):
 	def test_storefront_pages_share_base_layout_without_legacy_chrome(self):
 		self.set_cart()
 		response = self.client.get(reverse("home"))
-		self.assertContains(response, ">Account</small>")
+		content = response.content.decode()
+		header = content.split("</header>", 1)[0]
+		self.assertIn(">Account</small>", header)
+		self.assertIn("English", header)
+		self.assertNotIn("<small>KES</small>", header)
+		self.assertNotIn("All Categories", header)
+		self.assertNotIn("All Categories", content)
+		nav = content.split('class="container-fluid nav-bar', 1)[1].split(
+			"{% block content %}", 1
+		)[0]
+		self.assertIn('aria-label="Browse categories"', nav)
+		self.assertIn('class="fas fa-shopping-cart"', nav)
+		self.assertEqual(nav.count('class="nav-item nav-link'), 1)
 		self.assertNotContains(response, "My Dashboard")
 		for route_name in (
 			"home", "shop", "single", "cart", "login", "register"
