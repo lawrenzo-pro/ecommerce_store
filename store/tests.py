@@ -171,6 +171,32 @@ class StorefrontWorkflowTests(TestCase):
 				reverse("product_detail", kwargs={"slug": product.slug}),
 			)
 
+	def test_homepage_shows_a_product_sample_and_shop_shows_the_full_catalog(self):
+		for index in range(8):
+			Product.objects.create(
+				category=self.category,
+				name=f"Additional product {index}",
+				slug=f"additional-product-{index}",
+				price="100.00",
+			)
+
+		home_response = self.client.get(reverse("home"))
+		shop_response = self.client.get(reverse("shop"))
+
+		self.assertEqual(len(home_response.context["products"]), 8)
+		self.assertTrue(home_response.context["has_more_products"])
+		self.assertContains(home_response, "View all products")
+		self.assertEqual(len(shop_response.context["products"]), 9)
+
+	def test_category_page_omits_generic_service_promises(self):
+		response = self.client.get(
+			reverse("category", kwargs={"slug": self.category.slug})
+		)
+
+		self.assertNotContains(response, "Free Shipping")
+		self.assertNotContains(response, "Free Return")
+		self.assertNotContains(response, "Support 24/7")
+
 	def test_catalog_uses_uploaded_product_image_url(self):
 		from django.core.files.uploadedfile import SimpleUploadedFile
 
