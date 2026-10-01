@@ -630,6 +630,10 @@ class MpesaClientTests(TestCase):
 		result = initiate_stk_push("254712345678", "125.00", "42")
 
 		self.assertEqual(result["CheckoutRequestID"], "ws_CO_test_456")
+		self.assertEqual(
+			mock_post.call_args.kwargs["headers"]["Authorization"],
+			"Bearer test-token",
+		)
 		payload = mock_post.call_args.kwargs["json"]
 		self.assertEqual(payload["PhoneNumber"], "254712345678")
 		self.assertEqual(payload["Amount"], 125)
