@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .forms import AccountDetailsForm, CheckoutForm, RegistrationForm
-from .models import Order, OrderItem, Product
+from .models import Category, Order, OrderItem, Product
 from .services.mpesa import MpesaError, initiate_stk_push
 
 logger = logging.getLogger(__name__)
@@ -48,6 +48,7 @@ def _cart_summary(request):
 
 def home(request):
 	query = request.GET.get("q", "").strip()
+	category_slug = request.GET.get("category", "").strip()
 	products = Product.objects.filter(
 		is_available=True, stock__gt=0
 	).select_related("category")
@@ -55,6 +56,8 @@ def home(request):
 		products = products.filter(
 			Q(name__icontains=query) | Q(description__icontains=query)
 		)
+	if category_slug:
+		products = products.filter(category__slug=category_slug)
 	products = products.order_by("-created")
 	return render(
 		request,
@@ -63,6 +66,7 @@ def home(request):
 			"products": products,
 			"featured_product": products.first(),
 			"query": query,
+			"selected_category": category_slug,
 		},
 	)
 
@@ -252,10 +256,23 @@ def mpesa_callback(request):
 
 
 def shop(request):
+	query = request.GET.get("q", "").strip()
+	category_slug = request.GET.get("category", "").strip()
 	products = Product.objects.filter(
 		is_available=True, stock__gt=0
-	).select_related("category").order_by("-created")
-	return render(request, "store/shop.html", {"products": products})
+	).select_related("category")
+	if query:
+		products = products.filter(
+			Q(name__icontains=query) | Q(description__icontains=query)
+		)
+	if category_slug:
+		products = products.filter(category__slug=category_slug)
+	products = products.order_by("-created")
+	return render(
+		request,
+		"store/shop.html",
+		{"products": products, "query": query, "selected_category": category_slug},
+	)
 
 
 def single(request):

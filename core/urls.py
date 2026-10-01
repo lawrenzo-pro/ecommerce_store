@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.views import LoginView, LogoutView
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import include, path
 from store.forms import StoreAuthenticationForm
 from store.views import account, add_to_cart, cart, checkout, home, mpesa_callback, register, shop, single
@@ -22,3 +24,6 @@ urlpatterns = [
 	path("admin/", admin.site.urls),
 	path("i18n/", include("django.conf.urls.i18n")),
 ]
+
+if settings.DEBUG:
+	urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

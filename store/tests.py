@@ -105,6 +105,51 @@ class StorefrontWorkflowTests(TestCase):
 		self.assertNotContains(response, unavailable_product.name)
 		self.assertNotContains(response, out_of_stock_product.name)
 
+	def test_categories_are_dynamic_and_filter_home_and_shop_catalogs(self):
+		other_category = Category.objects.create(
+			name="Hostel Living", slug="hostel-living"
+		)
+		other_product = Product.objects.create(
+			category=other_category,
+			name="Desk lamp",
+			slug="desk-lamp",
+			price="1200.00",
+		)
+
+		response = self.client.get(reverse("home"))
+		self.assertContains(response, "Electronics")
+		self.assertContains(response, "Hostel Living")
+		self.assertContains(response, f'?category={other_category.slug}')
+		self.assertContains(response, "(1)")
+
+		for route_name in ("home", "shop"):
+			with self.subTest(route=route_name):
+				response = self.client.get(
+					reverse(route_name), {"category": other_category.slug}
+				)
+				self.assertEqual(list(response.context["products"]), [other_product])
+				self.assertContains(response, "Desk lamp")
+				self.assertNotContains(response, "Test phone")
+
+	def test_catalog_uses_uploaded_product_image_url(self):
+		from django.core.files.uploadedfile import SimpleUploadedFile
+
+		product = Product.objects.create(
+			category=self.category,
+			name="Image test product",
+			slug="image-test-product",
+			price="199.00",
+			image=SimpleUploadedFile(
+				"product.png", b"test-image-content", content_type="image/png"
+			),
+		)
+		self.addCleanup(product.image.delete, save=False)
+
+		response = self.client.get(reverse("home"))
+
+		self.assertContains(response, f'src="{product.image.url}"')
+		self.assertContains(response, 'class="catalog-product-image')
+
 	def test_shop_and_single_pages_use_database_product_for_add_button(self):
 		for route_name in ("home", "shop", "single"):
 			with self.subTest(route=route_name):

@@ -72,9 +72,16 @@
                     <div class="collapse navbar-collapse rounded-bottom" id="allCat">
                         <div class="navbar-nav ms-auto py-0">
                             <ul class="list-unstyled categories-bars">
-                                <li><div class="categories-bars-item"><a href="#">{% translate "Computing & Tech" %}</a></div></li>
-                                <li><div class="categories-bars-item"><a href="#">{% translate "Phones & Accessories" %}</a></div></li>
-                                <li><div class="categories-bars-item"><a href="#">{% translate "Hostel Living" %}</a></div></li>
+                                {% for category in store_categories %}
+                                <li>
+                                    <div class="categories-bars-item">
+                                        <a href="{% url 'home' %}?category={{ category.slug|urlencode }}">{{ category.name }}</a>
+                                        <span>({{ category.available_product_count }})</span>
+                                    </div>
+                                </li>
+                                {% empty %}
+                                <li class="px-3 py-2 text-muted">{% translate "No categories available." %}</li>
+                                {% endfor %}
                             </ul>
                         </div>
                     </div>

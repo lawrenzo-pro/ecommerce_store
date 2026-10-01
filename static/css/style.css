@@ -34,6 +34,17 @@
     transition: .5s;
 }
 
+.catalog-product-image,
+.product-image-placeholder {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+}
+
+.catalog-product-image {
+    object-fit: contain;
+    background-color: #fff;
+}
+
 .btn-square {
     width: 32px;
     height: 32px;

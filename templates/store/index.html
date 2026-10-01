@@ -268,6 +268,10 @@
                 <div class="carousel-header-banner h-100">
                     {% if featured_product and featured_product.image %}
                     <img src="{{ featured_product.image.url }}" class="img-fluid w-100 h-100" style="object-fit: contain;" alt="{{ featured_product.name }}">
+                    {% elif featured_product %}
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center bg-light">
+                        <i class="fas fa-image fa-3x text-muted" aria-hidden="true"></i>
+                    </div>
                     {% else %}
                     <img src="{% static 'img/header-img.jpg' %}" class="img-fluid w-100 h-100" style="object-fit: cover;" alt="Electronics">
                     {% endif %}
@@ -373,38 +377,6 @@
         </div>
     </div>
     <!-- Trust Badges End -->
-
-    <!-- Products Offer Start -->
-    <div class="container-fluid bg-light py-5">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.2s">
-                    <a href="#" class="d-flex align-items-center justify-content-between border bg-white rounded p-4">
-                        <div>
-                            <p class="text-muted mb-3">Find The Best Camera for You!</p>
-                            <h3 class="text-primary">Smart Camera</h3>
-                            <h1 class="display-3 text-secondary mb-0">40% <span
-                                    class="text-primary fw-normal">Off</span></h1>
-                        </div>
-                        <img src="{% static 'img/product-1.png' %}" class="img-fluid" alt="">
-                    </a>
-                </div>
-                <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.3s">
-                    <a href="#" class="d-flex align-items-center justify-content-between border bg-white rounded p-4">
-                        <div>
-                            <p class="text-muted mb-3">Find The Best Whatches for You!</p>
-                            <h3 class="text-primary">Smart Whatch</h3>
-                            <h1 class="display-3 text-secondary mb-0">20% <span
-                                    class="text-primary fw-normal">Off</span></h1>
-                        </div>
-                        <img src="{% static 'img/product-2.png' %}" class="img-fluid" alt="">
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Products Offer End -->
-
 
     <!-- Our Products Start -->
     <div class="container-fluid product py-5">
@@ -1339,9 +1311,11 @@
                                     <div class="product-item-inner border rounded">
                                         <div class="product-item-inner-item">
                                             {% if product.image %}
-                                            <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top" alt="{{ product.name }}">
+                                            <img src="{{ product.image.url }}" class="catalog-product-image img-fluid rounded-top" alt="{{ product.name }}">
                                             {% else %}
-                                            <img src="{% static 'img/product-3.png' %}" class="img-fluid w-100 rounded-top" alt="{{ product.name }}">
+                                            <div class="product-image-placeholder bg-light d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-image fa-3x text-muted" aria-hidden="true"></i>
+                                            </div>
                                             {% endif %}
                                             <div class="product-details">
                                                 <a href="#"><i class="fa fa-eye fa-1x"></i></a>
@@ -1378,41 +1352,7 @@
     </div>
     <!-- Our Products End -->
 
-    <!-- Product Banner Start -->
-    <div class="container-fluid py-5">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-6 wow fadeInLeft" data-wow-delay="0.1s">
-                    <a href="#">
-                        <div class="bg-primary rounded position-relative">
-                            <img src="{% static 'img/product-banner.jpg' %}" class="img-fluid w-100 rounded" alt="">
-                            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center rounded p-4"
-                                style="background: rgba(255, 255, 255, 0.5);">
-                                <h3 class="display-5 text-primary">EOS Rebel <br> <span>T7i Kit</span></h3>
-                                <p class="fs-4 text-muted">KSh 899.99</p>
-                                <a href="#" class="btn btn-primary rounded-pill align-self-start py-2 px-4">Shop Now</a>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-lg-6 wow fadeInRight" data-wow-delay="0.2s">
-                    <a href="#">
-                        <div class="text-center bg-primary rounded position-relative">
-                            <img src="{% static 'img/product-banner-2.jpg' %}" class="img-fluid w-100" alt="">
-                            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center rounded p-4"
-                                style="background: rgba(242, 139, 0, 0.5);">
-                                <h2 class="display-2 text-secondary">SALE</h2>
-                                <h4 class="display-5 text-white mb-4">Get UP To 50% Off</h4>
-                                <a href="#" class="btn btn-secondary rounded-pill align-self-center py-2 px-4">Shop
-                                    Now</a>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Product Banner End -->
+
 
     <!-- Product List Satrt -->
     {% comment %}
