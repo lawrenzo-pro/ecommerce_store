@@ -16,6 +16,9 @@ msgstr "Nyumbani"
 msgid "Shop"
 msgstr "Duka"
 
+msgid "Account"
+msgstr "Akaunti"
+
 msgid "Single Page"
 msgstr "Ukurasa wa bidhaa"
 
@@ -73,6 +76,12 @@ msgstr "Endelea kununua"
 msgid "We will send an M-Pesa payment prompt to this number."
 msgstr "Tutatumia ombi la malipo ya M-Pesa kwenye nambari hii."
 
+msgid "Delivery and payment"
+msgstr "Uwasilishaji na malipo"
+
+msgid "Checkout with M-Pesa"
+msgstr "Lipa kwa M-Pesa"
+
 msgid "Total due"
 msgstr "Jumla ya kulipa"
 
@@ -99,6 +108,15 @@ msgstr "Weka nambari ya M-Pesa ya Kenya, kama 0712345678 au 254712345678."
 
 msgid "Quantity exceeds available stock."
 msgstr "Kiasi kinazidi bidhaa zilizopo."
+
+msgid "Enter a valid product quantity."
+msgstr "Weka idadi sahihi ya bidhaa."
+
+msgid "A product in your cart is no longer available."
+msgstr "Bidhaa moja kwenye kikapu chako haipatikani tena."
+
+msgid "Product quantities must be greater than zero."
+msgstr "Idadi ya bidhaa lazima iwe zaidi ya sifuri."
 
 msgid "That product is not available."
 msgstr "Bidhaa hiyo haipatikani."

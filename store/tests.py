@@ -138,7 +138,7 @@ class StorefrontWorkflowTests(TestCase):
 			delivery_location="Nairobi",
 			total_cost="125.00",
 		)
-		for route_name in ("home", "shop", "single", "cart", "checkout", "account"):
+		for route_name in ("home", "shop", "single", "cart", "account"):
 			with self.subTest(route=route_name):
 				response = self.client.get(reverse(route_name))
 				self.assertEqual(response.status_code, 200)
@@ -149,8 +149,11 @@ class StorefrontWorkflowTests(TestCase):
 
 	def test_storefront_pages_share_base_layout_without_legacy_chrome(self):
 		self.set_cart()
+		response = self.client.get(reverse("home"))
+		self.assertContains(response, ">Account</small>")
+		self.assertNotContains(response, "My Dashboard")
 		for route_name in (
-			"home", "shop", "single", "cart", "checkout", "login", "register"
+			"home", "shop", "single", "cart", "login", "register"
 		):
 			with self.subTest(route=route_name):
 				response = self.client.get(reverse(route_name))
@@ -161,6 +164,11 @@ class StorefrontWorkflowTests(TestCase):
 				self.assertNotContains(response, ">Single Page</a>")
 				self.assertNotContains(response, "bestseller.html")
 				self.assertNotContains(response, "404.html")
+		self.assertRedirects(
+			self.client.get(reverse("checkout")),
+			reverse("cart"),
+			fetch_redirect_response=False,
+		)
 		user = get_user_model().objects.create_user(username="base-layout-customer")
 		self.client.force_login(user)
 		response = self.client.get(reverse("account"))
@@ -176,8 +184,9 @@ class StorefrontWorkflowTests(TestCase):
 		}
 		with patch("store.views.initiate_stk_push", return_value=checkout_response) as push:
 			response = self.client.post(
-				reverse("checkout"),
+				reverse("cart"),
 				{
+					"action": "checkout",
 					"first_name": "Ada",
 					"last_name": "Njeri",
 					"phone_number": "0712 345 678",
@@ -197,8 +206,9 @@ class StorefrontWorkflowTests(TestCase):
 	def test_checkout_rejects_invalid_phone_before_creating_order(self):
 		self.set_cart()
 		response = self.client.post(
-			reverse("checkout"),
+			reverse("cart"),
 			{
+				"action": "checkout",
 				"first_name": "Ada",
 				"last_name": "Njeri",
 				"phone_number": "1234",
@@ -209,13 +219,32 @@ class StorefrontWorkflowTests(TestCase):
 		self.assertEqual(Order.objects.count(), 0)
 		self.assertContains(response, "Enter a Kenyan M-Pesa number")
 
+	def test_checkout_rejects_quantity_above_stock(self):
+		self.set_cart()
+		response = self.client.post(
+			reverse("cart"),
+			{
+				"action": "checkout",
+				f"quantity_{self.product.pk}": str(self.product.stock + 1),
+				"first_name": "Ada",
+				"last_name": "Njeri",
+				"phone_number": "0712345678",
+				"delivery_location": "Kilimani",
+			},
+		)
+		self.assertRedirects(response, reverse("cart"), fetch_redirect_response=False)
+		self.assertEqual(Order.objects.count(), 0)
+		self.assertEqual(self.client.session["cart"][str(self.product.pk)], 1)
+		self.assertContains(self.client.get(reverse("cart")), "Quantity exceeds available stock.")
+
 	def test_checkout_rejects_fractional_shilling_total(self):
 		self.product.price = "125.50"
 		self.product.save(update_fields=["price"])
 		self.set_cart()
 		response = self.client.post(
-			reverse("checkout"),
+			reverse("cart"),
 			{
+				"action": "checkout",
 				"first_name": "Ada",
 				"last_name": "Njeri",
 				"phone_number": "0712345678",
@@ -235,8 +264,9 @@ class StorefrontWorkflowTests(TestCase):
 			return_value={"CheckoutRequestID": "ws_CO_customer_123"},
 		):
 			self.client.post(
-				reverse("checkout"),
+				reverse("cart"),
 				{
+					"action": "checkout",
 					"first_name": "Ada",
 					"last_name": "Njeri",
 					"phone_number": "0712345678",

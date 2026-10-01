@@ -71,6 +71,7 @@ def cart(request):
 	if request.method == "POST":
 		cart_data = request.session.get(CART_SESSION_KEY, {})
 		remove_id = request.POST.get("remove")
+		quantity_error = False
 		if remove_id:
 			cart_data.pop(remove_id, None)
 		else:
@@ -80,20 +81,93 @@ def cart(request):
 					continue
 				try:
 					quantity = int(value)
+				except (TypeError, ValueError):
+					quantity_error = True
+					messages.error(request, _("Enter a valid product quantity."))
+					continue
+				try:
 					product = Product.objects.get(pk=product_id, is_available=True)
-				except (TypeError, ValueError, Product.DoesNotExist):
+				except Product.DoesNotExist:
 					cart_data.pop(product_id, None)
+					quantity_error = True
+					messages.error(request, _("A product in your cart is no longer available."))
 					continue
 				if quantity < 1:
-					cart_data.pop(product_id, None)
+					if request.POST.get("action") == "checkout":
+						quantity_error = True
+						messages.error(request, _("Product quantities must be greater than zero."))
+					else:
+						cart_data.pop(product_id, None)
 				elif quantity <= product.stock:
 					cart_data[product_id] = quantity
 				else:
+					quantity_error = True
 					messages.error(request, _("Quantity exceeds available stock."))
 		request.session[CART_SESSION_KEY] = cart_data
+		if request.POST.get("action") == "checkout":
+			if quantity_error:
+				return redirect("cart")
+			items, subtotal = _cart_summary(request)
+			if not items:
+				messages.info(request, _("Your cart is empty."))
+				return redirect("cart")
+			form = CheckoutForm(request.POST)
+			return _complete_checkout(request, items, subtotal, form)
 		return redirect("cart")
 	items, subtotal = _cart_summary(request)
-	return render(request, "store/cart.html", {"cart_items": items, "subtotal": subtotal})
+	return render(
+		request,
+		"store/cart.html",
+		{"cart_items": items, "subtotal": subtotal, "form": CheckoutForm()},
+	)
+
+
+def _complete_checkout(request, items, subtotal, form):
+	if not form.is_valid():
+		return render(
+			request,
+			"store/cart.html",
+			{"form": form, "cart_items": items, "subtotal": subtotal},
+		)
+	if subtotal != subtotal.to_integral_value():
+		form.add_error(None, _("M-Pesa payments must total a whole number of Kenya shillings."))
+		return render(
+			request,
+			"store/cart.html",
+			{"form": form, "cart_items": items, "subtotal": subtotal},
+		)
+	with transaction.atomic():
+		order = Order.objects.create(
+			user=request.user if request.user.is_authenticated else None,
+			first_name=form.cleaned_data["first_name"],
+			last_name=form.cleaned_data["last_name"],
+			phone_number=form.cleaned_data["phone_number"],
+			delivery_location=form.cleaned_data["delivery_location"],
+			total_cost=subtotal,
+		)
+		OrderItem.objects.bulk_create([
+			OrderItem(order=order, product=item["product"], price=item["product"].price, quantity=item["quantity"])
+			for item in items
+		])
+	try:
+		response = initiate_stk_push(
+			order.phone_number, order.total_cost, str(order.pk)
+		)
+	except MpesaError:
+		logger.exception("M-Pesa STK Push failed for order %s", order.pk)
+		messages.error(
+			request,
+			_("We could not start the M-Pesa payment. Your order %(order_id)s was saved; please try again or contact support.")
+			% {"order_id": order.pk},
+		)
+	else:
+		order.checkout_request_id = response["CheckoutRequestID"]
+		order.merchant_request_id = response.get("MerchantRequestID", "")
+		order.payment_status = "processing"
+		order.save(update_fields=["checkout_request_id", "merchant_request_id", "payment_status"])
+		request.session.pop(CART_SESSION_KEY, None)
+		messages.success(request, _("Payment request sent. Enter your M-Pesa PIN on your phone to complete order %(order_id)s.") % {"order_id": order.pk})
+	return redirect("cart")
 
 
 @require_POST
@@ -119,49 +193,7 @@ def add_to_cart(request):
 
 
 def checkout(request):
-	items, subtotal = _cart_summary(request)
-	if not items:
-		messages.info(request, _("Your cart is empty."))
-		return redirect("cart")
-	form = CheckoutForm(request.POST or None)
-	if request.method == "POST" and form.is_valid():
-		if subtotal != subtotal.to_integral_value():
-			form.add_error(None, _("M-Pesa payments must total a whole number of Kenya shillings."))
-			return render(request, "store/checkout.html", {"form": form, "cart_items": items, "subtotal": subtotal})
-		with transaction.atomic():
-			order = Order.objects.create(
-				user=request.user if request.user.is_authenticated else None,
-				first_name=form.cleaned_data["first_name"],
-				last_name=form.cleaned_data["last_name"],
-				phone_number=form.cleaned_data["phone_number"],
-				delivery_location=form.cleaned_data["delivery_location"],
-				total_cost=subtotal,
-			)
-			OrderItem.objects.bulk_create([
-				OrderItem(order=order, product=item["product"], price=item["product"].price, quantity=item["quantity"])
-				for item in items
-			])
-		try:
-			response = initiate_stk_push(
-				order.phone_number, order.total_cost, str(order.pk)
-			)
-		except MpesaError:
-			logger.exception("M-Pesa STK Push failed for order %s", order.pk)
-			messages.error(
-				request,
-				_("We could not start the M-Pesa payment. Your order %(order_id)s was saved; please try again or contact support.")
-				% {"order_id": order.pk},
-			)
-		else:
-			order.checkout_request_id = response["CheckoutRequestID"]
-			order.merchant_request_id = response.get("MerchantRequestID", "")
-			order.payment_status = "processing"
-			order.save(update_fields=["checkout_request_id", "merchant_request_id", "payment_status"])
-			request.session.pop(CART_SESSION_KEY, None)
-			messages.success(request, _("Payment request sent. Enter your M-Pesa PIN on your phone to complete order %(order_id)s.") % {"order_id": order.pk})
-			return redirect("cart")
-		return redirect("checkout")
-	return render(request, "store/checkout.html", {"form": form, "cart_items": items, "subtotal": subtotal})
+	return redirect("cart")
 
 
 def register(request):

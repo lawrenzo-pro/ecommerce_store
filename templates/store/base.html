@@ -24,64 +24,50 @@
         </div>
     </div>
 
-    <div class="container-fluid px-5 d-none border-bottom d-lg-block">
-        <div class="row gx-0 align-items-center">
-            <div class="col-lg-12 text-center text-lg-end">
-                <div class="d-inline-flex align-items-center" style="height: 45px;">
-                    <div class="text-muted me-2"><small>KES</small></div>
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown">
-                            <small>{% if current_language == "sw" %}Kiswahili{% else %}English{% endif %}</small>
-                        </a>
-                        <div class="dropdown-menu rounded">
-                            <form action="{% url 'set_language' %}" method="post">
-                                {% csrf_token %}
-                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                <button type="submit" name="language" value="en" class="dropdown-item">English</button>
-                                <button type="submit" name="language" value="sw" class="dropdown-item">Kiswahili</button>
-                            </form>
-                        </div>
-                    </div>
-                    {% include "store/includes/account_menu.html" %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="container-fluid px-5 py-4 d-none d-lg-block">
-        <div class="row gx-0 align-items-center text-center">
-            <div class="col-md-4 col-lg-3 text-center text-lg-start">
+    <header class="container-fluid px-3 px-lg-5 py-3">
+        <div class="row gx-3 gy-2 align-items-center">
+            <div class="col-4 col-lg-2">
                 <a href="{% url 'home' %}" class="navbar-brand p-0">
-                    <h1 class="display-5 text-primary m-0">EldoMarket</h1>
+                    <h1 class="h2 text-primary m-0">EldoMarket</h1>
                 </a>
             </div>
-            <div class="col-md-4 col-lg-6 text-center">
-                <div class="position-relative ps-4">
-                    <form action="{% url 'home' %}" method="get" class="d-flex border rounded-pill">
-                        <input class="form-control border-0 rounded-pill w-100 py-3" type="search" name="q"
-                            placeholder="Search for laptops, phones..." value="{{ query|default_if_none:'' }}">
-                        <button type="submit" class="btn btn-primary rounded-pill py-3 px-5" style="border: 0;"
-                            aria-label="{% translate 'Search' %}">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </form>
+            <div class="col-8 col-lg-7">
+                <form action="{% url 'home' %}" method="get" class="d-flex border rounded-pill">
+                    <input class="form-control border-0 rounded-pill w-100 py-2 py-lg-3" type="search" name="q"
+                        placeholder="Search for laptops, phones..." value="{{ query|default_if_none:'' }}">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4" style="border: 0;"
+                        aria-label="{% translate 'Search' %}">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            <div class="col-12 col-lg-3 d-flex align-items-center justify-content-end">
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle text-muted mx-2" data-bs-toggle="dropdown">
+                        <small>{% if current_language == "sw" %}Kiswahili{% else %}English{% endif %}</small>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end rounded">
+                        <form action="{% url 'set_language' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <button type="submit" name="language" value="en" class="dropdown-item">English</button>
+                            <button type="submit" name="language" value="sw" class="dropdown-item">Kiswahili</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-4 col-lg-3 text-center text-lg-end">
-                <a href="{% url 'cart' %}" class="text-muted d-inline-flex align-items-center">
-                    <i class="fas fa-shopping-cart me-2"></i>{% translate "Cart" %}
-                </a>
+                {% include "store/includes/account_menu.html" %}
             </div>
         </div>
-    </div>
+    </header>
 
     <div class="container-fluid nav-bar p-0">
         <div class="row gx-0 bg-primary px-5 align-items-center">
-            <div class="col-lg-3 d-none d-lg-block">
+            <div class="col-3 col-lg-3">
                 <nav class="navbar navbar-light position-relative" style="width: 250px;">
-                    <button class="navbar-toggler border-0 fs-4 w-100 px-0 text-start" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#allCat">
-                        <h4 class="m-0"><i class="fa fa-bars me-2"></i>{% translate "All Categories" %}</h4>
+                    <button class="navbar-toggler border-0 fs-4 px-0 text-start" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#allCat"
+                        aria-label="{% translate 'Browse categories' %}">
+                        <i class="fa fa-bars"></i>
                     </button>
                     <div class="collapse navbar-collapse rounded-bottom" id="allCat">
                         <div class="navbar-nav ms-auto py-0">
@@ -96,26 +82,15 @@
             </div>
             <div class="col-12 col-lg-9">
                 <nav class="navbar navbar-expand-lg navbar-light bg-primary">
-                    <a href="{% url 'home' %}" class="navbar-brand d-block d-lg-none">
-                        <h1 class="display-5 text-secondary m-0">EldoMarket</h1>
-                    </a>
                     <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse"
                         data-bs-target="#navbarCollapse" aria-label="{% translate 'Toggle navigation' %}">
                         <span class="fa fa-bars fa-1x"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarCollapse">
-                        <div class="navbar-nav ms-auto py-0">
-                            <a href="{% url 'home' %}" class="nav-item nav-link{% if request.resolver_match.url_name == 'home' %} active{% endif %}">{% translate "Home" %}</a>
-                            <a href="{% url 'shop' %}" class="nav-item nav-link{% if request.resolver_match.url_name == 'shop' %} active{% endif %}">{% translate "Shop" %}</a>
-                            <a href="{% url 'cart' %}" class="nav-item nav-link{% if request.resolver_match.url_name == 'cart' %} active{% endif %}">{% translate "Cart" %}</a>
-                            <a href="{% url 'checkout' %}" class="nav-item nav-link{% if request.resolver_match.url_name == 'checkout' %} active{% endif %}">{% translate "Checkout" %}</a>
-                            <div class="nav-item dropdown d-block d-lg-none mb-3">
-                                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">{% translate "All Categories" %}</a>
-                                <div class="dropdown-menu m-0">
-                                    <a href="#" class="dropdown-item">{% translate "Computing & Tech" %}</a>
-                                    <a href="#" class="dropdown-item">{% translate "Phones & Accessories" %}</a>
-                                    <a href="#" class="dropdown-item">{% translate "Hostel Living" %}</a>
-                                </div>
+                        <div class="navbar-nav ms-auto py-0 flex-row">
+                            <a href="{% url 'cart' %}" class="nav-item nav-link px-3{% if request.resolver_match.url_name == 'cart' %} active{% endif %}"
+                                aria-label="{% translate 'Cart' %}" title="{% translate 'Cart' %}">
+                                <i class="fas fa-shopping-cart"></i>
                             </div>
                         </div>
                     </div>
@@ -185,7 +160,6 @@
                         <a href="{% url 'home' %}"><i class="fas fa-angle-right me-2"></i> Home</a>
                         <a href="{% url 'shop' %}"><i class="fas fa-angle-right me-2"></i> Shop</a>
                         <a href="{% url 'cart' %}"><i class="fas fa-angle-right me-2"></i> Cart</a>
-                        <a href="{% url 'checkout' %}"><i class="fas fa-angle-right me-2"></i> Checkout</a>
                     </div>
                 </div>
             </div>

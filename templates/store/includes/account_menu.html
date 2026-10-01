@@ -2,7 +2,7 @@
 <div class="dropdown">
     <a href="{% if user.is_authenticated %}{% url 'account' %}{% else %}{% url 'login' %}{% endif %}"
         class="dropdown-toggle text-muted ms-2" data-bs-toggle="dropdown">
-        <small><i class="fa fa-home me-2"></i>{% translate "My Dashboard" %}</small>
+        <small><i class="fa fa-user me-2"></i>{% translate "Account" %}</small>
     </a>
     <div class="dropdown-menu rounded">
         {% if user.is_authenticated %}
