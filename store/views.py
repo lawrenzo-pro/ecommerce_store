@@ -19,6 +19,7 @@ from django.views.decorators.http import require_POST
 from .forms import AccountDetailsForm, CheckoutForm, RegistrationForm
 from .models import Category, Order, OrderItem, Product, WishlistItem
 from .services.mpesa import MpesaError, initiate_stk_push
+from .services.paystack import PaystackError, initialize_transaction, verify_transaction
 
 logger = logging.getLogger(__name__)
 CART_SESSION_KEY = "cart"
@@ -151,26 +152,55 @@ def _complete_checkout(request, items, subtotal, form):
 			"store/cart.html",
 			{"form": form, "cart_items": items, "subtotal": subtotal},
 		)
-	if subtotal != subtotal.to_integral_value():
+	payment_method = form.cleaned_data.get("payment_method", "paystack")
+	if payment_method == "mpesa" and subtotal != subtotal.to_integral_value():
 		form.add_error(None, _("M-Pesa payments must total a whole number of Kenya shillings."))
 		return render(
 			request,
 			"store/cart.html",
 			{"form": form, "cart_items": items, "subtotal": subtotal},
 		)
+
 	with transaction.atomic():
 		order = Order.objects.create(
 			user=request.user if request.user.is_authenticated else None,
 			first_name=form.cleaned_data["first_name"],
 			last_name=form.cleaned_data["last_name"],
+			email=form.cleaned_data["email"],
 			phone_number=form.cleaned_data["phone_number"],
 			delivery_location=form.cleaned_data["delivery_location"],
 			total_cost=subtotal,
+			payment_method=payment_method,
 		)
 		OrderItem.objects.bulk_create([
 			OrderItem(order=order, product=item["product"], price=item["product"].price, quantity=item["quantity"])
 			for item in items
 		])
+
+	if payment_method == "paystack":
+		callback_url = request.build_absolute_uri(reverse("paystack_callback"))
+		reference = f"ORD-{order.pk}-{order.created.strftime('%Y%m%d%H%M%S')}"
+		try:
+			paystack_res = initialize_transaction(
+				email=order.email,
+				amount_in_kes=order.total_cost,
+				reference=reference,
+				callback_url=callback_url,
+			)
+		except PaystackError as exc:
+			logger.exception("Paystack initialization failed for order %s", order.pk)
+			messages.error(
+				request,
+				_("Could not initiate Paystack transaction: %(error)s") % {"error": str(exc)},
+			)
+			return redirect("cart")
+
+		order.paystack_reference = reference
+		order.payment_status = "pending"
+		order.save(update_fields=["paystack_reference", "payment_status"])
+		# Note: Session cart is kept intact here until payment verification succeeds
+		return redirect(paystack_res["authorization_url"])
+
 	try:
 		response = initiate_stk_push(
 			order.phone_number, order.total_cost, str(order.pk)
@@ -190,6 +220,59 @@ def _complete_checkout(request, items, subtotal, form):
 		request.session.pop(CART_SESSION_KEY, None)
 		messages.success(request, _("Payment request sent. Enter your M-Pesa PIN on your phone to complete order %(order_id)s.") % {"order_id": order.pk})
 	return redirect("cart")
+
+
+def paystack_callback(request):
+	reference = request.GET.get("reference") or request.GET.get("trxref") or request.POST.get("reference")
+	if not reference:
+		messages.error(request, _("No transaction reference provided."))
+		return redirect("cart")
+
+	order = Order.objects.filter(paystack_reference=reference).first()
+	if not order:
+		messages.error(request, _("Order not found for transaction reference."))
+		return redirect("cart")
+
+	if order.is_paid:
+		messages.success(
+			request,
+			_("Payment completed successfully for order #%(order_id)s!") % {"order_id": order.pk},
+		)
+		return redirect("cart")
+
+	try:
+		verification = verify_transaction(reference)
+		data = verification.get("data", {})
+		status = data.get("status")
+	except PaystackError as exc:
+		logger.exception("Verification failed for Paystack reference %s", reference)
+		messages.error(
+			request,
+			_("Could not verify transaction: %(error)s") % {"error": str(exc)},
+		)
+		return redirect("cart")
+
+	if status == "success":
+		order.is_paid = True
+		order.payment_status = "paid"
+		order.save(update_fields=["is_paid", "payment_status"])
+		request.session.pop(CART_SESSION_KEY, None)
+		messages.success(
+			request,
+			_("Thank you! Your payment was successful and order #%(order_id)s has been confirmed.")
+			% {"order_id": order.pk},
+		)
+	else:
+		order.payment_status = "cancelled" if status in ("abandoned", "cancelled") else "failed"
+		order.save(update_fields=["payment_status"])
+		# DO NOT clear cart! Keep cart intact in session.
+		messages.info(
+			request,
+			_("Your transaction was cancelled. No charges were made, and your cart items have been saved so you can try again whenever you're ready."),
+		)
+
+	return redirect("cart")
+
 
 
 @require_POST

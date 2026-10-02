@@ -45,11 +45,23 @@ class CheckoutForm(forms.Form):
     last_name = forms.CharField(
         max_length=50, label=_("Last name"), widget=forms.TextInput(attrs={"class": "form-control"})
     )
+    email = forms.EmailField(
+        label=_("Email address"), widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "email@example.com"})
+    )
     phone_number = forms.CharField(
-        max_length=25, label=_("M-Pesa phone number"), widget=forms.TextInput(attrs={"class": "form-control"})
+        max_length=25, label=_("Phone number"), widget=forms.TextInput(attrs={"class": "form-control"})
     )
     delivery_location = forms.CharField(
         max_length=250, label=_("Delivery location"), widget=forms.TextInput(attrs={"class": "form-control"})
+    )
+    payment_method = forms.ChoiceField(
+        choices=[
+            ("paystack", _("Paystack (Card, M-Pesa, Bank)")),
+            ("mpesa", _("M-Pesa Direct STK Push")),
+        ],
+        initial="paystack",
+        widget=forms.RadioSelect(attrs={"class": "form-check-input"}),
+        label=_("Payment method"),
     )
 
     def clean_phone_number(self):
@@ -60,6 +72,7 @@ class CheckoutForm(forms.Form):
             phone = "254" + phone[1:]
         if not re.fullmatch(r"254[17]\d{8}", phone):
             raise forms.ValidationError(
-                _("Enter a Kenyan M-Pesa number, such as 0712345678 or 254712345678.")
+                _("Enter a valid phone number, such as 0712345678 or 254712345678.")
             )
         return phone
+

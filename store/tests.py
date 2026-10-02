@@ -277,9 +277,8 @@ class StorefrontWorkflowTests(TestCase):
 		nav = content.split('class="container-fluid nav-bar', 1)[1].split(
 			"{% block content %}", 1
 		)[0]
-		self.assertIn('aria-label="Browse categories"', nav)
-		self.assertIn('class="fas fa-shopping-cart"', nav)
-		self.assertEqual(nav.count('class="nav-item nav-link'), 1)
+		self.assertIn('aria-label="Toggle navigation"', nav)
+		self.assertIn('class="fas fa-shopping-cart', nav)
 		for footer_detail in (
 			"University of Eldoret, Main Campus",
 			"ayutide@iuiu.ac.ug",
@@ -326,8 +325,10 @@ class StorefrontWorkflowTests(TestCase):
 					"action": "checkout",
 					"first_name": "Ada",
 					"last_name": "Njeri",
+					"email": "ada@example.com",
 					"phone_number": "0712 345 678",
 					"delivery_location": "Kilimani",
+					"payment_method": "mpesa",
 				},
 			)
 
@@ -340,6 +341,100 @@ class StorefrontWorkflowTests(TestCase):
 		self.assertTrue(push.called)
 		self.assertNotIn("cart", self.client.session)
 
+	def test_checkout_with_paystack_initializes_transaction_and_keeps_cart(self):
+		self.set_cart(quantity=2)
+		paystack_init_response = {
+			"authorization_url": "https://checkout.paystack.com/test-auth-url",
+			"access_code": "test_access_code",
+			"reference": "ORD-1-20261002000000",
+		}
+		with patch("store.views.initialize_transaction", return_value=paystack_init_response) as paystack_mock:
+			response = self.client.post(
+				reverse("cart"),
+				{
+					"action": "checkout",
+					"first_name": "Ada",
+					"last_name": "Njeri",
+					"email": "ada@example.com",
+					"phone_number": "0712345678",
+					"delivery_location": "Kilimani",
+					"payment_method": "paystack",
+				},
+			)
+
+		self.assertRedirects(response, "https://checkout.paystack.com/test-auth-url", fetch_redirect_response=False)
+		order = Order.objects.get()
+		self.assertEqual(order.email, "ada@example.com")
+		self.assertEqual(order.payment_method, "paystack")
+		self.assertTrue(order.paystack_reference.startswith(f"ORD-{order.pk}-"))
+		self.assertEqual(order.payment_status, "pending")
+		self.assertTrue(paystack_mock.called)
+		# Crucial check: session cart MUST be kept intact when redirecting to Paystack
+		self.assertIn("cart", self.client.session)
+		self.assertEqual(self.client.session["cart"][str(self.product.pk)], 2)
+
+	def test_paystack_callback_success_marks_paid_and_clears_cart(self):
+		order = Order.objects.create(
+			first_name="Ada",
+			last_name="Njeri",
+			email="ada@example.com",
+			phone_number="254712345678",
+			delivery_location="Kilimani",
+			total_cost=Decimal("250.00"),
+			payment_status="pending",
+			payment_method="paystack",
+			paystack_reference="ORD-TEST-123",
+		)
+		self.set_cart(quantity=2)
+		verify_response = {
+			"status": True,
+			"data": {"status": "success", "reference": "ORD-TEST-123"},
+		}
+		with patch("store.views.verify_transaction", return_value=verify_response):
+			response = self.client.get(
+				reverse("paystack_callback"), {"reference": "ORD-TEST-123"}
+			)
+
+		self.assertRedirects(response, reverse("cart"), fetch_redirect_response=False)
+		order.refresh_from_db()
+		self.assertTrue(order.is_paid)
+		self.assertEqual(order.payment_status, "paid")
+		self.assertNotIn("cart", self.client.session)
+		self.assertContains(self.client.get(reverse("cart")), "payment was successful")
+
+	def test_paystack_callback_cancelled_marks_cancelled_and_keeps_cart(self):
+		order = Order.objects.create(
+			first_name="Ada",
+			last_name="Njeri",
+			email="ada@example.com",
+			phone_number="254712345678",
+			delivery_location="Kilimani",
+			total_cost=Decimal("250.00"),
+			payment_status="pending",
+			payment_method="paystack",
+			paystack_reference="ORD-TEST-456",
+		)
+		self.set_cart(quantity=2)
+		verify_response = {
+			"status": True,
+			"data": {"status": "abandoned", "reference": "ORD-TEST-456"},
+		}
+		with patch("store.views.verify_transaction", return_value=verify_response):
+			response = self.client.get(
+				reverse("paystack_callback"), {"reference": "ORD-TEST-456"}
+			)
+
+		self.assertRedirects(response, reverse("cart"), fetch_redirect_response=False)
+		order.refresh_from_db()
+		self.assertFalse(order.is_paid)
+		self.assertEqual(order.payment_status, "cancelled")
+		# Crucial check: session cart MUST be preserved on cancellation
+		self.assertIn("cart", self.client.session)
+		self.assertEqual(self.client.session["cart"][str(self.product.pk)], 2)
+		cart_response = self.client.get(reverse("cart"))
+		self.assertContains(cart_response, "Your transaction was cancelled")
+		self.assertContains(cart_response, "your cart items have been saved")
+
 	def test_checkout_rejects_invalid_phone_before_creating_order(self):
 		self.set_cart()
 		response = self.client.post(
@@ -348,13 +443,15 @@ class StorefrontWorkflowTests(TestCase):
 				"action": "checkout",
 				"first_name": "Ada",
 				"last_name": "Njeri",
+				"email": "ada@example.com",
 				"phone_number": "1234",
 				"delivery_location": "Kilimani",
+				"payment_method": "paystack",
 			},
 		)
 		self.assertEqual(response.status_code, 200)
 		self.assertEqual(Order.objects.count(), 0)
-		self.assertContains(response, "Enter a Kenyan M-Pesa number")
+		self.assertContains(response, "Enter a valid phone number")
 
 	def test_checkout_rejects_quantity_above_stock(self):
 		self.set_cart()
@@ -365,8 +462,10 @@ class StorefrontWorkflowTests(TestCase):
 				f"quantity_{self.product.pk}": str(self.product.stock + 1),
 				"first_name": "Ada",
 				"last_name": "Njeri",
+				"email": "ada@example.com",
 				"phone_number": "0712345678",
 				"delivery_location": "Kilimani",
+				"payment_method": "paystack",
 			},
 		)
 		self.assertRedirects(response, reverse("cart"), fetch_redirect_response=False)
@@ -374,7 +473,7 @@ class StorefrontWorkflowTests(TestCase):
 		self.assertEqual(self.client.session["cart"][str(self.product.pk)], 1)
 		self.assertContains(self.client.get(reverse("cart")), "Quantity exceeds available stock.")
 
-	def test_checkout_rejects_fractional_shilling_total(self):
+	def test_checkout_rejects_fractional_shilling_total_for_mpesa(self):
 		self.product.price = "125.50"
 		self.product.save(update_fields=["price"])
 		self.set_cart()
@@ -384,8 +483,10 @@ class StorefrontWorkflowTests(TestCase):
 				"action": "checkout",
 				"first_name": "Ada",
 				"last_name": "Njeri",
+				"email": "ada@example.com",
 				"phone_number": "0712345678",
 				"delivery_location": "Kilimani",
+				"payment_method": "mpesa",
 			},
 		)
 		self.assertEqual(response.status_code, 200)
@@ -406,8 +507,10 @@ class StorefrontWorkflowTests(TestCase):
 					"action": "checkout",
 					"first_name": "Ada",
 					"last_name": "Njeri",
+					"email": "ada@example.com",
 					"phone_number": "0712345678",
 					"delivery_location": "Kilimani",
+					"payment_method": "mpesa",
 				},
 			)
 		self.assertEqual(Order.objects.get().user, user)
@@ -478,8 +581,10 @@ class CheckoutFormTests(TestCase):
 				data={
 					"first_name": "Ada",
 					"last_name": "Njeri",
+					"email": "ada@example.com",
 					"phone_number": phone,
 					"delivery_location": "Kilimani",
+					"payment_method": "paystack",
 				}
 			)
 			self.assertTrue(form.is_valid(), form.errors)

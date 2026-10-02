@@ -54,10 +54,17 @@ class Order(models.Model):
         ("processing", "Processing"),
         ("paid", "Paid"),
         ("failed", "Failed"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        ("paystack", "Paystack"),
+        ("mpesa", "M-Pesa Direct"),
     ]
 
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
+    email = models.EmailField(blank=True, default="")
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="orders",
@@ -65,7 +72,6 @@ class Order(models.Model):
         blank=True,
         null=True,
     )
-    # Crucial for the Daraja STK Push:
     phone_number = models.CharField(max_length=15, help_text="Format: 2547XXXXXXXX")
     delivery_location = models.CharField(max_length=250, help_text="e.g. Hostel name or Apartment")
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -73,9 +79,13 @@ class Order(models.Model):
     payment_status = models.CharField(
         max_length=12, choices=PAYMENT_STATUS_CHOICES, default="pending"
     )
+    payment_method = models.CharField(
+        max_length=20, choices=PAYMENT_METHOD_CHOICES, default="paystack"
+    )
     checkout_request_id = models.CharField(max_length=100, blank=True, unique=True, null=True)
     merchant_request_id = models.CharField(max_length=100, blank=True)
     mpesa_receipt_number = models.CharField(max_length=30, blank=True)
+    paystack_reference = models.CharField(max_length=100, blank=True, unique=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

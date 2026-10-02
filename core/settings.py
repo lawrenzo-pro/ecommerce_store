@@ -88,6 +88,15 @@ USE_I18N = True
 USE_TZ = True
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
+env_file = BASE_DIR / ".env"
+if env_file.exists():
+	with open(env_file, "r") as f:
+		for line in f:
+			line = line.strip()
+			if line and not line.startswith("#") and "=" in line:
+				k, v = line.split("=", 1)
+				os.environ.setdefault(k.strip(), v.strip())
+
 MPESA_ENVIRONMENT = os.environ.get("MPESA_ENVIRONMENT", "sandbox").lower()
 MPESA_CONSUMER_KEY = os.environ.get("MPESA_CONSUMER_KEY", "")
 MPESA_CONSUMER_SECRET = os.environ.get("MPESA_CONSUMER_SECRET", "")
@@ -95,6 +104,10 @@ MPESA_SHORTCODE = os.environ.get("MPESA_SHORTCODE", "")
 MPESA_PASSKEY = os.environ.get("MPESA_PASSKEY", "")
 MPESA_CALLBACK_URL = os.environ.get("MPESA_CALLBACK_URL", "")
 MPESA_TIMEOUT = int(os.environ.get("MPESA_TIMEOUT", "15"))
+
+PAYSTACK_PUBLIC_KEY = os.environ.get("PAYSTACK_PUBLIC_KEY", "")
+PAYSTACK_SECRET_KEY = os.environ.get("PAYSTACK_SECRET_KEY", "")
+PAYSTACK_CALLBACK_URL = os.environ.get("PAYSTACK_CALLBACK_URL", "")
 
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -104,3 +117,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+

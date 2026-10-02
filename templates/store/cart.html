@@ -59,22 +59,49 @@
                 <div class="alert alert-danger" role="alert">{{ error }}</div>
                 {% endfor %}
                 <div class="row g-4">
-                    {% for field in form %}
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {% for error in field.errors %}
-                        <div class="text-danger small">{{ error }}</div>
-                        {% endfor %}
+                        <label class="form-label" for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+                        {{ form.first_name }}
+                        {% for error in form.first_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
                     </div>
-                    {% endfor %}
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+                        {{ form.last_name }}
+                        {% for error in form.last_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                        {{ form.email }}
+                        {% for error in form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.phone_number.id_for_label }}">{{ form.phone_number.label }}</label>
+                        {{ form.phone_number }}
+                        {% for error in form.phone_number.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="{{ form.delivery_location.id_for_label }}">{{ form.delivery_location.label }}</label>
+                        {{ form.delivery_location }}
+                        {% for error in form.delivery_location.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label d-block fw-bold mb-2">{{ form.payment_method.label }}</label>
+                        <div class="d-flex flex-column gap-2 p-3 bg-light rounded border">
+                            {% for radio in form.payment_method %}
+                            <div class="form-check">
+                                {{ radio.tag }}
+                                <label class="form-check-label fw-medium" for="{{ radio.id_for_label }}">
+                                    {{ radio.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% for error in form.payment_method.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
                 </div>
-                <p class="text-muted mt-3">
-                    {% translate "We will send an M-Pesa payment prompt to this number." %}
-                </p>
-                <button class="btn btn-primary rounded-pill px-4 py-3" type="submit"
+                <button class="btn btn-primary rounded-pill px-5 py-3 mt-4" type="submit"
                     name="action" value="checkout">
-                    {% translate "Checkout with M-Pesa" %}
+                    <i class="fas fa-lock me-2"></i>{% translate "Proceed to Checkout" %}
                 </button>
             </section>
         </form>

@@ -62,42 +62,52 @@
 
     <div class="container-fluid nav-bar p-0">
         <div class="row gx-0 bg-white border-top border-bottom px-3 px-lg-5 align-items-center">
-            <div class="col-auto d-lg-none">
-                <nav class="navbar navbar-light position-relative p-0">
-                    <button class="navbar-toggler border-0 fs-4 px-0 text-start" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#allCat"
-                        aria-label="{% translate 'Browse categories' %}">
+            <div class="col">
+                <nav class="navbar navbar-expand-lg navbar-light py-2 p-lg-0">
+                    <button class="navbar-toggler border-0 fs-4 px-0" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-label="{% translate 'Toggle navigation' %}">
                         <i class="fa fa-bars"></i>
                     </button>
-                    <div class="collapse navbar-collapse rounded-bottom" id="allCat">
-                        <div class="navbar-nav ms-auto py-0">
-                            <ul class="list-unstyled categories-bars">
-                                {% for category in store_categories %}
-                                <li>
-                                    <div class="categories-bars-item">
-                                        <a href="{% url 'category' slug=category.slug %}">{{ category.name }}</a>
-                                    </div>
-                                </li>
-                                {% empty %}
-                                <li class="px-3 py-2 text-muted">{% translate "No categories available." %}</li>
-                                {% endfor %}
-                            </ul>
+                    <div class="collapse navbar-collapse" id="mainNavbar">
+                        <div class="navbar-nav me-auto py-0 align-items-center gap-1">
+                            <a href="{% url 'home' %}" class="nav-item nav-link text-dark text-nowrap px-3{% if request.resolver_match.url_name == 'home' %} active fw-bold text-primary{% endif %}">
+                                <i class="fas fa-home me-1"></i>{% translate "Home" %}
+                            </a>
+                            <a href="{% url 'shop' %}" class="nav-item nav-link text-dark text-nowrap px-3{% if request.resolver_match.url_name == 'shop' or request.resolver_match.url_name == 'category' %} active fw-bold text-primary{% endif %}">
+                                <i class="fas fa-store me-1"></i>{% translate "Products" %}
+                            </a>
+                            <div class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle text-dark text-nowrap px-3" data-bs-toggle="dropdown">
+                                    <i class="fas fa-th-list me-1"></i>{% translate "Categories" %}
+                                </a>
+                                <div class="dropdown-menu rounded shadow-sm border-0 m-0">
+                                    <a href="{% url 'shop' %}" class="dropdown-item">{% translate "All Products" %}</a>
+                                    <div class="dropdown-divider"></div>
+                                    {% for category in store_categories %}
+                                    <a href="{% url 'category' slug=category.slug %}" class="dropdown-item">{{ category.name }}</a>
+                                    {% empty %}
+                                    <span class="dropdown-item text-muted">{% translate "No categories available" %}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="navbar-nav ms-auto py-0 align-items-center gap-2">
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'account' %}" class="nav-item nav-link text-dark text-nowrap px-3{% if request.resolver_match.url_name == 'account' %} active fw-bold text-primary{% endif %}" title="{% translate 'My Account' %}">
+                                <i class="fas fa-user me-1"></i>{% translate "Account" %}
+                            </a>
+                            {% else %}
+                            <a href="{% url 'login' %}" class="nav-item nav-link text-dark text-nowrap px-3" title="{% translate 'Login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i>{% translate "Login" %}
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'cart' %}" class="nav-item nav-link text-dark text-nowrap px-3{% if request.resolver_match.url_name == 'cart' %} active fw-bold text-primary{% endif %}"
+                                aria-label="{% translate 'Cart' %}" title="{% translate 'Cart' %}">
+                                <i class="fas fa-shopping-cart me-1"></i>{% translate "Cart" %}
+                            </a>
                         </div>
                     </div>
-                </nav>
-            </div>
-            <nav class="col d-none d-lg-flex category-nav align-items-center justify-content-center gap-2 py-2"
-                aria-label="{% translate 'Shop by category' %}">
-                {% for category in store_categories %}
-                <a class="category-nav-link text-dark text-nowrap" href="{% url 'category' slug=category.slug %}">{{ category.name }}</a>
-                {% endfor %}
-            </nav>
-            <div class="col-auto">
-                <nav class="navbar navbar-light justify-content-end p-0">
-                    <a href="{% url 'cart' %}" class="nav-item nav-link px-3{% if request.resolver_match.url_name == 'cart' %} active{% endif %}"
-                        aria-label="{% translate 'Cart' %}" title="{% translate 'Cart' %}">
-                        <i class="fas fa-shopping-cart"></i>
-                    </a>
                 </nav>
             </div>
         </div>
